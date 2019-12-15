@@ -1,7 +1,19 @@
--- Temporarily disable constraint checks to re-create the database.
-EXEC sp_msforeachtable 'ALTER TABLE ? NOCHECK CONSTRAINT all'
-EXEC sp_msforeachtable 'DROP TABLE ?'
-EXEC sp_msforeachtable 'ALTER TABLE ? WITH CHECK CHECK CONSTRAINT all'
+-- Drop the tables to recreate the database.
+DROP TABLE IF EXISTS booking_payments;
+DROP TABLE IF EXISTS companies;
+DROP TABLE IF EXISTS conference_prices;
+DROP TABLE IF EXISTS individual_clients;
+DROP TABLE IF EXISTS workshop_enrollments;
+DROP TABLE IF EXISTS day_enrollments;
+DROP TABLE IF EXISTS people;
+DROP TABLE IF EXISTS workshop_bookings;
+DROP TABLE IF EXISTS day_bookings;
+DROP TABLE IF EXISTS workshop_interests;
+DROP TABLE IF EXISTS bookings;
+DROP TABLE IF EXISTS clients;
+DROP TABLE IF EXISTS workshops;
+DROP TABLE IF EXISTS conference_days;
+DROP TABLE IF EXISTS conferences;
 
 /*
  * Tabela zawierająca organizowane konferencje.
