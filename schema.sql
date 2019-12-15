@@ -94,9 +94,7 @@ CREATE TABLE people (
   id INT NOT NULL IDENTITY PRIMARY KEY,
   first_name VARCHAR(50) NOT NULL,
   last_name VARCHAR(50) NOT NULL,
-  phone VARCHAR(15) NOT NULL,
-  email VARCHAR(50) NOT NULL,
-  student_card_id VARCHAR(20)
+  email VARCHAR(50) NOT NULL
 );
 
 /*
@@ -105,7 +103,9 @@ CREATE TABLE people (
 CREATE TABLE individual_clients (
   id INT NOT NULL IDENTITY PRIMARY KEY,
   client_id INT NOT NULL FOREIGN KEY REFERENCES clients(id),
-  person_id INT NOT NULL FOREIGN KEY REFERENCES people(id)
+  person_id INT NOT NULL FOREIGN KEY REFERENCES people(id),
+  phone VARCHAR(15) NOT NULL,
+  student_card_id VARCHAR(20)
 );
 
 /*
@@ -114,7 +114,8 @@ CREATE TABLE individual_clients (
 CREATE TABLE bookings (
   id INT NOT NULL IDENTITY PRIMARY KEY,
   client_id INT NOT NULL FOREIGN KEY REFERENCES clients(id),
-  created_at DATETIME NOT NULL
+  created_at DATETIME NOT NULL,
+  cancelled_at DATETIME DEFAULT NULL
 );
 
 /*
@@ -125,7 +126,7 @@ CREATE TABLE day_bookings (
   booking_id INT NOT NULL FOREIGN KEY REFERENCES bookings(id),
   conference_day_id INT NOT NULL FOREIGN KEY REFERENCES conference_days(id),
   attendee_count INT NOT NULL,
-  student_count INT NOT NULL
+  cancelled_at DATETIME DEFAULT NULL
 );
 
 /*
@@ -136,7 +137,7 @@ CREATE TABLE workshop_bookings (
   day_booking_id INT NOT NULL FOREIGN KEY REFERENCES day_bookings(id),
   workshop_id INT NOT NULL FOREIGN KEY REFERENCES workshops(id),
   attendee_count INT NOT NULL,
-  student_count INT NOT NULL
+  cancelled_at DATETIME DEFAULT NULL
 );
 
 /*
@@ -155,4 +156,24 @@ CREATE TABLE workshop_enrollments (
   id INT NOT NULL IDENTITY PRIMARY KEY,
   day_enrollment_id INT NOT NULL FOREIGN KEY REFERENCES day_enrollments(id),
   workshop_booking_id INT NOT NULL FOREIGN KEY REFERENCES workshop_bookings(id)
+);
+
+
+/*
+ * id
+ **/
+CREATE TABLE booking_payments (
+  id INT NOT NULL IDENTITY PRIMARY KEY,
+  booking_id INT NOT NULL FOREIGN KEY REFERENCES bookings(id),
+  value MONEY NOT NULL,
+  date DATETIME NOT NULL
+);
+
+/*
+ * id
+ **/
+CREATE TABLE workshop_interests (
+  id INT NOT NULL IDENTITY PRIMARY KEY,
+  workshop_id INT NOT NULL FOREIGN KEY REFERENCES workshops(id),
+  booking_id INT NOT NULL FOREIGN KEY REFERENCES bookings(id)
 );
