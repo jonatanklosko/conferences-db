@@ -3,6 +3,7 @@ DROP TABLE IF EXISTS booking_payments;
 DROP TABLE IF EXISTS companies;
 DROP TABLE IF EXISTS conference_prices;
 DROP TABLE IF EXISTS individual_clients;
+DROP TABLE IF EXISTS attendees;
 DROP TABLE IF EXISTS workshop_enrollments;
 DROP TABLE IF EXISTS day_enrollments;
 DROP TABLE IF EXISTS people;
@@ -104,10 +105,15 @@ CREATE TABLE workshop_bookings (
   cancelled_at DATETIME DEFAULT NULL
 );
 
+CREATE TABLE attendees (
+  id INT NOT NULL IDENTITY PRIMARY KEY,
+  person_id INT NOT NULL FOREIGN KEY REFERENCES people(id)
+);
+
 CREATE TABLE day_enrollments (
   id INT NOT NULL IDENTITY PRIMARY KEY,
   day_booking_id INT NOT NULL FOREIGN KEY REFERENCES day_bookings(id),
-  attendee_id INT NOT NULL FOREIGN KEY REFERENCES people(id)
+  attendee_id INT NOT NULL FOREIGN KEY REFERENCES attendees(id)
 );
 
 CREATE TABLE workshop_enrollments (

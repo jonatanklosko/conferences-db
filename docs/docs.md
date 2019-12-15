@@ -240,6 +240,22 @@ CREATE TABLE workshop_bookings (
 );
 ```
 
+### `attendees`
+
+Tabela zawierająca informacje o uczestnikach konferencji.
+
+| Kolumna | Opis |
+| --- | --- |
+| `id` | unikalny identyfikator |
+| `person_id` | identyfikator osoby (dane osobowe) |
+
+```sql
+CREATE TABLE attendees (
+  id INT NOT NULL IDENTITY PRIMARY KEY,
+  person_id INT NOT NULL FOREIGN KEY REFERENCES people(id)
+);
+```
+
 ### `day_enrollments`
 
 Tabela wiążąca rezerwacje na dany dzień konferencji z odpowiadającymi im uczestnikami.
