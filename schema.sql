@@ -4,10 +4,12 @@ EXEC sp_msforeachtable 'DROP TABLE ?'
 EXEC sp_msforeachtable 'ALTER TABLE ? WITH CHECK CHECK CONSTRAINT all'
 
 /*
+ * Tabela zawierająca organizowane konferencje.
+ *
  * id
- * name - conference name
- * city, street, postal_code, building_number - address details
- * student_discount - discount for students in range [0.0000, 1.0000]
+ * name - nazwa konferencji
+ * city, street, postal_code, building_number - dane adresowe
+ * student_discount - zniżka studencka z przedziału [0.0000, 1.0000]
  **/
 CREATE TABLE conferences (
   id INT NOT NULL IDENTITY PRIMARY KEY,
@@ -20,10 +22,12 @@ CREATE TABLE conferences (
 );
 
 /*
+ * Tabela zawierająca informacje o poszczególnych dniach konferencji.
+ *
  * id
- * conference_id
- * date - date of the day
- * attendee_limit - maximal number of attendees for the day
+ * conference_id - identyfikator konferencji
+ * date - data której dotyczy dzień konferencji
+ * attendee_limit - maksymalna liczba uczestników tego dnia
  **/
 CREATE TABLE conference_days (
   id INT NOT NULL IDENTITY PRIMARY KEY,
@@ -33,13 +37,15 @@ CREATE TABLE conference_days (
 );
 
 /*
+ * Tabela zawiera informacje o warsztatach odbywajacych się w ramach konferencji w konkretnym dniu.
+ *
  * id
  * conference_day_id
- * name, description - workshop information
- * start, end - workshop time range
- * room - information about the location within the conference building
- * price - fixed workshop price
- * attendee_limit - maximal number of attendees for the workshop
+ * name, description - informacje o warsztacie
+ * start, end - przedział czasowy, w którym odbywa się warsztat
+ * room - informacja o dokładnym miejscu obywania się warsztatu w budynku konferencji
+ * price - stała cena za warsztat
+ * attendee_limit - maksymalna liczba uczestników tego warsztatu
  **/
 CREATE TABLE workshops (
   id INT NOT NULL IDENTITY PRIMARY KEY,
@@ -54,10 +60,12 @@ CREATE TABLE workshops (
 );
 
 /*
+ * Tabela zawiera progi cenowe za jeden dzień konferencji w zależności od czasu.
+ *
  * id
  * conference_id
- * final_date - date until which the given price applies
- * price - price that applies until the final_date
+ * final_date - data do której obowiązuje dana cena
+ * price - cena w danym czasie
  **/
 CREATE TABLE conference_prices (
   id INT NOT NULL IDENTITY PRIMARY KEY,
@@ -67,7 +75,10 @@ CREATE TABLE conference_prices (
 );
 
 /*
+ * Tabela zawiera podstawowe dane o klientach dokonujących rezerwacji.
+ *
  * id
+ * city, street, postal_code, building_number - dane adresowe klienta
  **/
 CREATE TABLE clients (
   id INT NOT NULL IDENTITY PRIMARY KEY,
@@ -78,7 +89,12 @@ CREATE TABLE clients (
 );
 
 /*
+ * Tabela zawiera dodatkowe dane firm będących klientami.
+ *
  * id
+ * client_id
+ * name - nazwa firmy
+ * phone - numer telefonu firmy
  **/
 CREATE TABLE companies (
   id INT NOT NULL IDENTITY PRIMARY KEY,
@@ -88,7 +104,11 @@ CREATE TABLE companies (
 );
 
 /*
+ * Tabela zawiera podstawowe dane osobowe.
+ *
  * id
+ * first_name, last_name - nazwa osoby
+ * email - adres email osoby
  **/
 CREATE TABLE people (
   id INT NOT NULL IDENTITY PRIMARY KEY,
@@ -98,7 +118,13 @@ CREATE TABLE people (
 );
 
 /*
+ * Tabela zwiera dodatkowe dane osób będących klientami indywidualnymi.
+ *
  * id
+ * client_id
+ * person_id
+ * phone - numer telefonu klienta indywidualnego
+ * student_card_id - numer karty studenckiej lub NULL jeżeli klient nie jest studentem
  **/
 CREATE TABLE individual_clients (
   id INT NOT NULL IDENTITY PRIMARY KEY,
@@ -109,7 +135,12 @@ CREATE TABLE individual_clients (
 );
 
 /*
+ * Tabela zawiera informacje o rezerwacjach dokonywanych przez klientów.
+ *
  * id
+ * client_id
+ * created_at - czas dokonania rezerwacji
+ * cancelled_at - czas anulowania rezerwacji lub NULL jeżeli rezerwacja nie została anulowana
  **/
 CREATE TABLE bookings (
   id INT NOT NULL IDENTITY PRIMARY KEY,
@@ -119,7 +150,13 @@ CREATE TABLE bookings (
 );
 
 /*
+ * Tabela zawiera informacje o rezerwacjach na wybrane dni dokonywanych przez klientów.
+ *
  * id
+ * booking_id
+ * conference_day_id
+ * attendee_count - zarezerwowana liczba miejsc na dany dzień konferencji
+ * cancelled_at - czas anulowania rezerwacji na dany dzień lub NULL jeżeli rezerwacja nie została anulowana
  **/
 CREATE TABLE day_bookings (
   id INT NOT NULL IDENTITY PRIMARY KEY,
@@ -130,7 +167,13 @@ CREATE TABLE day_bookings (
 );
 
 /*
+ * Tabela zawiera informacje o rezerwacjach na wybrane warsztaty dokonywanych przez klientów.
+ *
  * id
+ * day_booking_id
+ * workshop_id
+ * attendee_count - zarezerwowana liczba miejsc na dany warsztat
+ * cancelled_at - czas anulowania rezerwacji na dany warsztat lub NULL jeżeli rezerwacja nie została anulowana
  **/
 CREATE TABLE workshop_bookings (
   id INT NOT NULL IDENTITY PRIMARY KEY,
@@ -141,7 +184,11 @@ CREATE TABLE workshop_bookings (
 );
 
 /*
+ * Tabela wiąże rezerwacje na dany dzień konferencji z odpowiadającymi im uczestnikami.
+ *
  * id
+ * day_booking_id
+ * attendee_id
  **/
 CREATE TABLE day_enrollments (
   id INT NOT NULL IDENTITY PRIMARY KEY,
@@ -150,7 +197,11 @@ CREATE TABLE day_enrollments (
 );
 
 /*
+ * Tabela wiąże rezerwacje na dany warsztat z zapisami na dany dzień, czyli pośrednio z odpowiadającymi im uczestnikami.
+ *
  * id
+ * day_enrollment_id
+ * workshop_booking_id
  **/
 CREATE TABLE workshop_enrollments (
   id INT NOT NULL IDENTITY PRIMARY KEY,
@@ -160,7 +211,12 @@ CREATE TABLE workshop_enrollments (
 
 
 /*
+ * Tabela zawiera informacje o płatnościach za rezerwacje.
+ *
  * id
+ * booking_id
+ * value - wpłacona kwota
+ * date - czas dokonania płatności
  **/
 CREATE TABLE booking_payments (
   id INT NOT NULL IDENTITY PRIMARY KEY,
@@ -170,7 +226,11 @@ CREATE TABLE booking_payments (
 );
 
 /*
+ * Tabela zawiera informacje o warsztatach, którymi są zainteresowani klienci w ramach zamówienia.
+ *
  * id
+ * workshop_id
+ * booking_id
  **/
 CREATE TABLE workshop_interests (
   id INT NOT NULL IDENTITY PRIMARY KEY,
