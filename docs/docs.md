@@ -11,7 +11,7 @@ Tabela zawierająca organizowane konferencje.
 
 | Kolumna | Opis |
 | --- | --- |
-| `id` | identyfikator konferencji |
+| `id` | unikalny identyfikator |
 | `name` | nazwa konferencji |
 | `city`, `street`, `postal_code`, `building_number` | dane adresowe |
 | `student_discount` | zniżka studencka z przedziału [0.0000, 1.0000] |
@@ -34,7 +34,7 @@ Tabela zawierająca informacje o poszczególnych dniach konferencji.
 
 | Kolumna | Opis |
 | --- | --- |
-| `id` | |
+| `id` | unikalny identyfikator |
 | `conference_id` | identyfikator konferencji |
 | `date` | data której dotyczy dzień konferencji |
 | `attendee_limit` | maksymalna liczba uczestników tego dnia |
@@ -54,8 +54,8 @@ Tabela zawierająca informacje o warsztatach odbywajacych się w ramach konferen
 
 | Kolumna | Opis |
 | --- | --- |
-| `id` | |
-| `conference_day_id` | |
+| `id` | unikalny identyfikator |
+| `conference_day_id` | identyfikator dnia konferencji |
 | `name`, `description` | informacje o warsztacie |
 | `start`, `end` | przedział czasowy, w którym odbywa się warsztat |
 | `room` | informacja o dokładnym miejscu obywania się warsztatu w budynku konferencji |
@@ -82,8 +82,8 @@ Tabela zawierająca progi cenowe za jeden dzień konferencji w zależności od c
 
 | Kolumna | Opis |
 | --- | --- |
-| `id` | |
-| `conference_id` | |
+| `id` | unikalny identyfikator |
+| `conference_id` | identyfikator konferencji |
 | `final_date` | data do której obowiązuje dana cena |
 | `price` | cena w danym czasie |
 
@@ -102,7 +102,7 @@ Tabela zawierająca podstawowe dane o klientach dokonujących rezerwacji.
 
 | Kolumna | Opis |
 | --- | --- |
-| `id` | |
+| `id` | unikalny identyfikator |
 | `city`, `street`, `postal_code`, `building_number` | dane adresowe klienta |
 
 ```sql
@@ -121,8 +121,8 @@ Tabela zawierająca dodatkowe dane firm będących klientami.
 
 | Kolumna | Opis |
 | --- | --- |
-| `id` | |
-| `client_id` | |
+| `id` | unikalny identyfikator |
+| `client_id` | identyfikator klienta |
 | `name` | nazwa firmy |
 | `phone` | numer telefonu firmy |
 
@@ -141,8 +141,8 @@ Tabela zawierająca podstawowe dane osobowe.
 
 | Kolumna | Opis |
 | --- | --- |
-| `id` | |
-| `first_name`, `last_name` | nazwa osoby |
+| `id` | unikalny identyfikator |
+| `first_name`, `last_name` | imię i nazwisko osoby |
 | `email` | adres email osoby |
 
 ```sql
@@ -160,9 +160,9 @@ Tabela zwiera dodatkowe dane osób będących klientami indywidualnymi.
 
 | Kolumna | Opis |
 | --- | --- |
-| `id` | |
-| `client_id` | |
-| `person_id` | |
+| `id` | unikalny identyfikator |
+| `client_id` | identyfikator klienta |
+| `person_id` | identyfikator osoby |
 | `phone` | numer telefonu klienta indywidualnego |
 | `student_card_id` | numer karty studenckiej lub NULL jeżeli klient nie jest studentem |
 
@@ -182,8 +182,8 @@ Tabela zawierająca informacje o rezerwacjach dokonywanych przez klientów.
 
 | Kolumna | Opis |
 | --- | --- |
-| `id` | |
-| `client_id` | |
+| `id` | unikalny identyfikator |
+| `client_id` | identyfikator klienta |
 | `created_at` | czas dokonania rezerwacji |
 | `cancelled_at` | czas anulowania rezerwacji lub NULL jeżeli rezerwacja nie została anulowana |
 
@@ -202,9 +202,9 @@ Tabela zawierająca informacje o rezerwacjach na wybrane dni dokonywanych przez 
 
 | Kolumna | Opis |
 | --- | --- |
-| `id` | |
-| `booking_id` | |
-| `conference_day_id` | |
+| `id` | unikalny identyfikator |
+| `booking_id` | identyfikator rezerwacji |
+| `conference_day_id` | identyfikator dnia konferencji |
 | `attendee_count` | zarezerwowana liczba miejsc na dany dzień konferencji |
 | `cancelled_at` | czas anulowania rezerwacji na dany dzień lub NULL jeżeli rezerwacja nie została anulowana |
 
@@ -224,9 +224,9 @@ Tabela zawierająca informacje o rezerwacjach na wybrane warsztaty dokonywanych 
 
 | Kolumna | Opis |
 | --- | --- |
-| `id` | |
-| `day_booking_id` | |
-| `workshop_id` | |
+| `id` | unikalny identyfikator |
+| `day_booking_id` | identyfikator rezerwacji na dzień konferencji |
+| `workshop_id` | identyfikator warsztatu |
 | `attendee_count` | zarezerwowana liczba miejsc na dany warsztat |
 | `cancelled_at` | czas anulowania rezerwacji na dany warsztat lub NULL jeżeli rezerwacja nie została anulowana |
 
@@ -246,9 +246,9 @@ Tabela wiążąca rezerwacje na dany dzień konferencji z odpowiadającymi im uc
 
 | Kolumna | Opis |
 | --- | --- |
-| `id` | |
-| `day_booking_id` | |
-| `attendee_id` | |
+| `id` | unikalny identyfikator |
+| `day_booking_id` | identyfikator rezerwacji na dzień konferencji |
+| `attendee_id` | identyfikator uczestnika |
 
 ```sql
 CREATE TABLE day_enrollments (
@@ -264,9 +264,9 @@ Tabela wiążąca rezerwacje na dany warsztat z zapisami na dany dzień, czyli p
 
 | Kolumna | Opis |
 | --- | --- |
-| `id` | |
-| `day_enrollment_id` | |
-| `workshop_booking_id` | |
+| `id` | unikalny identyfikator |
+| `day_enrollment_id` | identyfikator zapisu na dany dzień |
+| `workshop_booking_id` | identyfikator rezerwacji na warsztat |
 
 ```sql
 CREATE TABLE workshop_enrollments (
@@ -282,8 +282,8 @@ Tabela zawierająca informacje o płatnościach za rezerwacje.
 
 | Kolumna | Opis |
 | --- | --- |
-| `id` | |
-| `booking_id` | |
+| `id` | unikalny identyfikator |
+| `booking_id` | identyfikator rezerwacji |
 | `value` | wpłacona kwota |
 | `date` | czas dokonania płatności |
 
@@ -298,13 +298,13 @@ CREATE TABLE booking_payments (
 
 ### `workshop_interests`
 
-Tabela zawierająca informacje o warsztatach, którymi są zainteresowani klienci w ramach zamówienia.
+Tabela zawierająca informacje o warsztatach, którymi są zainteresowani klienci w ramach rezerwacji.
 
 | Kolumna | Opis |
 | --- | --- |
-| `id` | |
-| `workshop_id` | |
-| `booking_id` | |
+| `id` | unikalny identyfikator |
+| `workshop_id` | identyfikator warsztatu |
+| `booking_id` | identyfikator rezerwacji |
 
 ```sql
 CREATE TABLE workshop_interests (
