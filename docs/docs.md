@@ -4,6 +4,10 @@
 
 ![Diagram ER](./er_diagram.svg)
 
+### Schemat
+
+![Schemat](./schema.svg)
+
 ## Tabele
 
 ### `conferences`
