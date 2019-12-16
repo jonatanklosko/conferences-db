@@ -3,9 +3,9 @@ DROP TABLE IF EXISTS booking_payments;
 DROP TABLE IF EXISTS companies;
 DROP TABLE IF EXISTS conference_prices;
 DROP TABLE IF EXISTS individual_clients;
-DROP TABLE IF EXISTS attendees;
 DROP TABLE IF EXISTS workshop_enrollments;
 DROP TABLE IF EXISTS day_enrollments;
+DROP TABLE IF EXISTS attendees;
 DROP TABLE IF EXISTS people;
 DROP TABLE IF EXISTS workshop_bookings;
 DROP TABLE IF EXISTS day_bookings;
@@ -85,6 +85,7 @@ CREATE TABLE individual_clients (
 CREATE TABLE bookings (
   id INT NOT NULL IDENTITY PRIMARY KEY,
   client_id INT NOT NULL FOREIGN KEY REFERENCES clients(id),
+  conference_id INT NOT NULL FOREIGN KEY REFERENCES conferences(id),
   created_at DATETIME NOT NULL,
   cancelled_at DATETIME DEFAULT NULL
 );
