@@ -25,7 +25,7 @@ CREATE TABLE conferences (
   building_number VARCHAR(10) NOT NULL,
   student_discount DECIMAL(5, 4) NOT NULL DEFAULT 0
 
-  CONSTRAINT student_discount_in_range CHECK (student_discount BETWEEN 0 AND 1)
+  CONSTRAINT conferences__student_discount_in_range CHECK (student_discount BETWEEN 0 AND 1)
 );
 
 CREATE TABLE conference_days (
@@ -34,8 +34,8 @@ CREATE TABLE conference_days (
   date DATE NOT NULL,
   attendee_limit INT NOT NULL,
 
-  CONSTRAINT unique_date_within_conference UNIQUE (conference_id, date),
-  CONSTRAINT positive_attendee_limit CHECK (attendee_limit > 0)
+  CONSTRAINT conference_days__unique_date_within_conference UNIQUE (conference_id, date),
+  CONSTRAINT conference_days__positive_attendee_limit CHECK (attendee_limit > 0)
 );
 
 CREATE TABLE workshops (
@@ -49,8 +49,8 @@ CREATE TABLE workshops (
   price MONEY NOT NULL,
   attendee_limit INT NOT NULL,
 
-  CONSTRAINT positive_attendee_limit CHECK (attendee_limit > 0),
-  CONSTRAINT  positive_price CHECK (price > 0)
+  CONSTRAINT workshops__positive_attendee_limit CHECK (attendee_limit > 0),
+  CONSTRAINT workshops__positive_price CHECK (price > 0)
 );
 
 CREATE TABLE conference_prices (
@@ -59,8 +59,8 @@ CREATE TABLE conference_prices (
   final_date DATE NOT NULL,
   price MONEY NOT NULL,
 
-  CONSTRAINT positive_price CHECK (price > 0),
-  CONSTRAINT unique_final_date_within_conference UNIQUE (conference_id, final_date)
+  CONSTRAINT conference_prices__positive_price CHECK (price > 0),
+  CONSTRAINT conference_prices__unique_final_date_within_conference UNIQUE (conference_id, final_date)
 );
 
 CREATE TABLE clients (
@@ -77,7 +77,7 @@ CREATE TABLE companies (
   name VARCHAR(50) NOT NULL,
   phone VARCHAR(15) NOT NULL,
 
-  CONSTRAINT unique_phone UNIQUE (phone)
+  CONSTRAINT companies__unique_phone UNIQUE (phone)
 );
 
 CREATE TABLE people (
@@ -86,7 +86,7 @@ CREATE TABLE people (
   last_name VARCHAR(50) NOT NULL,
   email VARCHAR(50) NOT NULL,
 
-  CONSTRAINT unique_email UNIQUE (email)
+  CONSTRAINT people__unique_email UNIQUE (email)
 );
 
 CREATE TABLE individual_clients (
@@ -96,7 +96,7 @@ CREATE TABLE individual_clients (
   phone VARCHAR(15) NOT NULL,
   student_card_id VARCHAR(20),
 
-  CONSTRAINT unique_phone UNIQUE (phone)
+  CONSTRAINT individual_clients__unique_phone UNIQUE (phone)
 );
 
 CREATE TABLE bookings (
@@ -106,7 +106,7 @@ CREATE TABLE bookings (
   created_at DATETIME NOT NULL,
   cancelled_at DATETIME DEFAULT NULL,
 
-  CONSTRAINT unique_client_with_conference UNIQUE (client_id, conference_id)
+  CONSTRAINT bookings__unique_client_within_conference UNIQUE (client_id, conference_id)
 );
 
 CREATE TABLE day_bookings (
@@ -116,8 +116,8 @@ CREATE TABLE day_bookings (
   attendee_count INT NOT NULL,
   cancelled_at DATETIME DEFAULT NULL,
 
-  CONSTRAINT positive_attendee_count CHECK (attendee_count > 0),
-  CONSTRAINT unique_conference_day_within_booking UNIQUE (conference_day_id, booking_id)
+  CONSTRAINT day_bookings__positive_attendee_count CHECK (attendee_count > 0),
+  CONSTRAINT day_bookings__unique_conference_day_within_booking UNIQUE (conference_day_id, booking_id)
 );
 
 CREATE TABLE workshop_bookings (
@@ -127,8 +127,8 @@ CREATE TABLE workshop_bookings (
   attendee_count INT NOT NULL,
   cancelled_at DATETIME DEFAULT NULL,
 
-  CONSTRAINT positive_attendee_count CHECK (attendee_count > 0),
-  CONSTRAINT unique_workshop_within_day_booking UNIQUE (workshop_id, day_booking_id)
+  CONSTRAINT workshop_bookings__positive_attendee_count CHECK (attendee_count > 0),
+  CONSTRAINT workshop_bookings__unique_workshop_within_day_booking UNIQUE (workshop_id, day_booking_id)
 );
 
 CREATE TABLE attendees (
@@ -141,7 +141,7 @@ CREATE TABLE day_enrollments (
   day_booking_id INT NOT NULL FOREIGN KEY REFERENCES day_bookings(id),
   attendee_id INT NOT NULL FOREIGN KEY REFERENCES attendees(id),
 
-  CONSTRAINT unique_attendee_within_day_booking UNIQUE (attendee_id, day_booking_id)
+  CONSTRAINT day_enrollments__unique_attendee_within_day_booking UNIQUE (attendee_id, day_booking_id)
 );
 
 CREATE TABLE workshop_enrollments (
@@ -149,7 +149,7 @@ CREATE TABLE workshop_enrollments (
   day_enrollment_id INT NOT NULL FOREIGN KEY REFERENCES day_enrollments(id),
   workshop_booking_id INT NOT NULL FOREIGN KEY REFERENCES workshop_bookings(id),
 
-  CONSTRAINT unique_workshop_within_day_enrollment UNIQUE (workshop_booking_id, day_enrollment_id)
+  CONSTRAINT workshop_enrollments__unique_workshop_within_day_enrollment UNIQUE (workshop_booking_id, day_enrollment_id)
 );
 
 CREATE TABLE booking_payments (
@@ -158,7 +158,7 @@ CREATE TABLE booking_payments (
   value MONEY NOT NULL,
   date DATETIME NOT NULL,
 
-  CONSTRAINT positive_value CHECK (value > 0)
+  CONSTRAINT booking_payments__positive_value CHECK (value > 0)
 );
 
 CREATE TABLE workshop_interests (
@@ -166,5 +166,5 @@ CREATE TABLE workshop_interests (
   workshop_id INT NOT NULL FOREIGN KEY REFERENCES workshops(id),
   booking_id INT NOT NULL FOREIGN KEY REFERENCES bookings(id),
 
-  CONSTRAINT unique_workshop_within_booking UNIQUE (workshop_id, booking_id)
+  CONSTRAINT workshop_interests__unique_workshop_within_booking UNIQUE (workshop_id, booking_id)
 );
