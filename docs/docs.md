@@ -2,11 +2,11 @@
 
 ### Diagram ER
 
-![Diagram ER](./er_diagram.svg)
+![Diagram ER](./img/er_diagram.svg)
 
 ### Schemat
 
-![Schemat](./schema.svg)
+![Schemat](./img/schema.svg)
 
 ## Tabele
 
