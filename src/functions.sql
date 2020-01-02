@@ -48,7 +48,7 @@ BEGIN
     WHERE workshops.id = @workshop_id
     GROUP BY workshops.id, workshops.attendee_limit
   )
-END
+END;
 GO
 
 DROP FUNCTION IF EXISTS conference_day_attendees; GO

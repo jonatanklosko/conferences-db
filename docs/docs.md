@@ -414,3 +414,182 @@ CREATE TABLE workshop_interests (
   CONSTRAINT workshop_interests__unique_workshop_within_booking UNIQUE (workshop_id, booking_id)
 );
 ```
+
+## Widoki
+
+### `badges_view`
+
+Widok zawierający informacje potrzebne do stworzenia identyfikatorów dla uczestników konferencji.
+
+```sql
+CREATE VIEW badges_view
+AS
+SELECT
+  bookings.conference_id,
+  people.first_name,
+  people.last_name,
+  people.email,
+  companies.name company_name
+FROM attendees
+JOIN people ON people.id = attendees.person_id
+JOIN day_enrollments ON attendees.id = day_enrollments.attendee_id
+JOIN day_bookings ON day_bookings.id = day_enrollments.day_booking_id
+JOIN bookings ON bookings.id = day_bookings.booking_id
+JOIN clients ON clients.id = bookings.id
+LEFT JOIN companies ON companies.client_id = clients.id;
+```
+
+### `client_statistics_view`
+
+Widok zawierający statystyki dotyczące aktywności klientów.
+Pozwala na łatwe wyszukanie najczęstszych oraz najbardziej zyskownych klientów.
+
+```sql
+CREATE VIEW client_statistics_view
+AS
+SELECT
+  clients.id client_id,
+  COUNT(DISTINCT bookings.id) number_of_bookings,
+  SUM(booking_payments.value) total_payments
+FROM clients
+JOIN bookings ON bookings.client_id = clients.id
+LEFT JOIN booking_payments ON booking_payments.booking_id = bookings.id
+GROUP BY clients.id;
+```
+
+### `upcoming_conferences_summary_view`
+
+Widok zawierający dodatkowe dane na temat nadchodzących konferencji,
+w tym obecnie obowiązującą cene za jeden dzień oraz liczbe wolnych miejsc na wszystkie dni konferencji.
+
+```sql
+CREATE VIEW upcoming_conferences_summary_view
+AS
+SELECT
+  conferences.name conference_name,
+  MIN(conference_days.date) start_date,
+  MAX(conference_days.date) end_date,
+  dbo.day_price_on(conferences.id, GETDATE()) price_per_day,
+  MIN(dbo.available_conference_day_spots(conference_days.id)) available_all_day_spots
+FROM conferences
+JOIN conference_days ON conference_days.conference_id = conferences.id
+WHERE conference_days.date >= GETDATE()
+GROUP BY conferences.id, conferences.name;
+```
+
+## Funkcje
+
+### `day_price_on`
+
+Funkcja wyznaczająca cenę za jeden dzień danej konferencji we wskazanym dniu.
+
+```sql
+CREATE FUNCTION day_price_on(
+  @conference_id INT,
+  @date DATE
+)
+RETURNS MONEY
+AS
+BEGIN
+  RETURN (
+    SELECT TOP 1 price
+    FROM conference_prices
+    WHERE conference_id = @conference_id AND final_date >= @date
+    ORDER BY final_date
+  )
+END;
+```
+
+### `available_conference_day_spots`
+
+Funkcja wyznaczająca liczbę wolnych miejsc wskazany dzień konferencji.
+
+```sql
+CREATE FUNCTION available_conference_day_spots(
+  @conference_day_id INT
+)
+RETURNS INT
+AS
+BEGIN
+  RETURN (
+    SELECT
+      attendee_limit - ISNULL(SUM(day_bookings.attendee_count), 0)
+    FROM conference_days
+    LEFT JOIN day_bookings ON day_bookings.conference_day_id = conference_days.id
+    WHERE conference_days.id = @conference_day_id
+    GROUP BY conference_days.id, conference_days.attendee_limit
+  )
+END;
+```
+
+### `available_workshop_spots`
+
+Funkcja wyznaczająca liczbę wolnych miejsc wskazany warsztat.
+
+```sql
+CREATE FUNCTION available_workshop_spots(
+  @workshop_id INT
+)
+RETURNS INT
+AS
+BEGIN
+  RETURN (
+    SELECT
+      attendee_limit - ISNULL(SUM(workshop_bookings.attendee_count), 0)
+    FROM workshops
+    LEFT JOIN workshop_bookings ON workshop_bookings.workshop_id = workshops.id
+    WHERE workshops.id = @workshop_id
+    GROUP BY workshops.id, workshops.attendee_limit
+  )
+END;
+```
+
+### `conference_day_attendees`
+
+Funkcja zwracająca listę uczestników na wskazany dzień konferencji.
+
+```sql
+CREATE FUNCTION conference_day_attendees(
+  @conference_day_id INT
+)
+RETURNS TABLE
+AS
+RETURN (
+  SELECT
+    attendees.id attendee_id,
+    people.*
+  FROM attendees
+  JOIN people ON people.id = attendees.person_id
+  JOIN day_enrollments ON day_enrollments.attendee_id = attendees.id
+  JOIN day_bookings ON day_bookings.id = day_enrollments.day_booking_id
+  WHERE day_bookings.conference_day_id = @conference_day_id
+    AND day_bookings.cancelled_at IS NULL
+);
+```
+
+### `workshop_day_attendees`
+
+Funkcja zwracająca listę uczestników na wskazany warsztat.
+
+```sql
+CREATE FUNCTION workshop_day_attendees(
+  @workshop_id INT
+)
+RETURNS TABLE
+AS
+RETURN (
+  SELECT
+    attendees.id attendee_id,
+    people.*
+  FROM attendees
+  JOIN people ON people.id = attendees.person_id
+  JOIN day_enrollments ON day_enrollments.attendee_id = attendees.id
+  JOIN workshop_bookings ON workshop_bookings.day_booking_id = day_enrollments.day_booking_id
+  WHERE workshop_bookings.workshop_id = @workshop_id
+    AND workshop_bookings.cancelled_at IS NULL
+);
+```
+
+## Procedury
+
+## Triggery
