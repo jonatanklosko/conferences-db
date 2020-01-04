@@ -191,23 +191,30 @@ class RandomTools:
     
     @staticmethod
     def getConfDayAttendeesLimit():
-        return 200
+        return 1000
     
     @staticmethod
     def getWorkshopAttendeesLimit():
         return 10 + 5*numpy.random.randint(18)
     
     @staticmethod
-    def getCompanyName():
-        pass
+    def getCompany(getRandom=True):
+        companies = [
+            ("CD Projekt S.A.", "contact@cdprojekt.pl"),
+            ("Techland Sp. z o.o.", "contact@techland.pl"),
+            ("People Can Fly Sp. z o.o.", "contact@peoplecanfly.pl"),
+            ("The Farm 51 Sp z o.o.", "contact@thefarm51.pl"),
+            ("11 Bit Studios S.A.", "contact@11bitstudios.pl")
+        ]
+        if getRandom:
+            a = numpy.random.randint(len(companies))
+            return companies[a]
+        else:
+            return companies
     
     @staticmethod
     def getPhoneNumber():
-        return 100000000 + numpy.random.randint(900000000)
-    
-    @staticmethod
-    def getEmail():
-        pass
+        return 1000000000 + numpy.random.randint(9000000000)
     
     @staticmethod
     def getTimeSlot():
@@ -225,6 +232,29 @@ class RandomTools:
         end = min_start + (s+t) * delta - beforeend
         
         return start.time(), end.time()
+    
+    @staticmethod
+    def getFirstLastName():
+        firstnames =\
+            ["Lena", "Jakub", "Julia", "Kacper", "Zuzanna", "Filip", "Maja", "Szymon",\
+             "Zofia", "Jan", "Amelia", "Antoni", "Hanna", "Michał", "Aleksandra",\
+             "Wojciech", "Wiktoria", "Mateusz", "Natalia", "Bartosz", "Oliwia", "Adam",\
+             "Alicja", "Franciszek", "Nikola", "Piotr", "Maria", "Aleksander", "Emilia",\
+             "Mikołaj", "Anna", "Wiktor", "Nadia", "Igor", "Gabriela", "Marcel",\
+             "Martyna", "Dawid", "Antonina", "Alan"]
+        lastnames =\
+            ["Nowak", "Wójcik", "Kowalczyk", "Woźniak", "Mazur", "Krawczk", "Kaczmarek",\
+             "Zając", "Król", "Wróbel", "Wieczorek", "Stępień", "Dudek", "Adamczyk",\
+             "Pawlak", "Sikora", "Walczak", "Baran", "Michalak", "Szewczyk", "Duda"]
+        
+        f = numpy.random.randint(len(firstnames))
+        l = numpy.random.randint(len(lastnames))
+        return firstnames[f], lastnames[l]
+    
+    @staticmethod
+    def getEmailPerson(firstname, lastname):
+        num = numpy.random.randint(10000)
+        return "{}{}{}@email.pl".format(firstname.lower(), lastname.lower(), num)
 
 class Generator:
     @staticmethod
@@ -280,6 +310,10 @@ class Generator:
         # based on a Poisson distribution (expected 2 conferences per month)
         
         conferences = list()
+        confdays = list()
+        confprices = list()
+        workshops = list()
+        
         conf_idx = 0
         confday_idx = 0
         
@@ -305,6 +339,24 @@ class Generator:
             )
             ExportTools.appendLine(file, conf_query)
             
+            confday_price = RandomTools.getConfDayPrice()
+                
+            confprice_query = "INSERT INTO conference_prices VALUES({}, '{}', {})".format(
+                conf_idx,
+                start.isoformat()[:10],
+                confday_price
+            )
+            ExportTools.appendLine(file, confprice_query)
+            confprices.append((confday_idx, conf_idx))
+                
+            confprice_query_d = "INSERT INTO conference_prices VALUES({}, '{}', {})".format(
+                conf_idx,
+                (start - 2 * week).isoformat()[:10],
+                0.8 * confday_price
+            )
+            ExportTools.appendLine(file, confprice_query_d)
+            confprices.append((confday_idx, conf_idx))
+            
             for i in range(duration):
                 confday_idx += 1
                 
@@ -317,26 +369,11 @@ class Generator:
                     daylimit
                 )
                 ExportTools.appendLine(file, confday_query)
+                confdays.append(conf_idx)
                 
-                confday_price = RandomTools.getConfDayPrice()
+                workshopsnum = RandomTools.getNumOfWorkshops()
                 
-                confprice_query = "INSERT INTO conference_prices VALUES({}, '{}', {})".format(
-                    conf_idx,
-                    start.isoformat()[:10],
-                    confday_price
-                )
-                ExportTools.appendLine(file, confprice_query)
-                
-                confprice_query_d = "INSERT INTO conference_prices VALUES({}, '{}', {})".format(
-                    conf_idx,
-                    (start - 2 * week).isoformat()[:10],
-                    0.8 * confday_price
-                )
-                ExportTools.appendLine(file, confprice_query_d)
-                
-                workshops = RandomTools.getNumOfWorkshops()
-                
-                for i in range(workshops):
+                for i in range(workshopsnum):
                     workshop_name = RandomTools.getWorkshopName()
                     descr = RandomTools.getWorkshopDescription()
                     timeslot_start, timeslot_end = RandomTools.getTimeSlot()
@@ -356,19 +393,46 @@ class Generator:
                         attendee_limit
                     )
                     ExportTools.appendLine(file, workshop_query)
+                    workshops.append((confday_idx, conf_idx, workshop_price, attendee_limit))
             
-            conferences.append((start, end))
-        
+            conferences.append((duration, discount))
         
         ExportTools.appendLine(file, "")
+        return conferences, confdays, confprices, workshops
+    
+    @staticmethod
+    def __makePeople(file):
+        numofpeople = 1500 + numpy.random.randint(1000)
+        
+        for _ in range(numofpeople):
+            firstname, lastname = RandomTools.getFirstLastName()
+            email = RandomTools.getEmailPerson(firstname, lastname)
+            
+            people_query = "INSERT INTO people VALUES('{}', '{}', '{}')".format(
+                firstname,
+                lastname,
+                email
+            )
+            ExportTools.appendLine(file, people_query)
+        
+        ExportTools.appendLine(file, "")
+        return numofpeople
+    
+    @staticmethod
+    def __makeCompanies(file):
+        companies = RandomTools.getCompany(gerRandom=False)
+        numofcompanies = len(companies)
     
     def CREATE(dataBase):
         file = ExportTools.openFile("baza", "sql", withClear=True)
         
         Generator.__useStatement(file, dataBase)
         Generator.__emptyDataBase(file)
-        Generator.__makeConferences(file)
+        
+        conferences, confdays, confprices, workshops = Generator.__makeConferences(file)
+        numofpeople = Generator.__makePeople(file)
         
         ExportTools.closeFile(file)
 
+        
 Generator.CREATE("Projekt")
