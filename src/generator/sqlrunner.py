@@ -6,8 +6,15 @@ class SQLRunner:
     @staticmethod
     def __readFile(filename, extension):
         directory = filename + "." + extension
-        file = open(directory, "r")
+        file = open(directory, "r", encoding='UTF-8')
         content = file.read()
+        file.close()
+        return content
+        
+    def __readFileLBL(filename, extension):
+        directory = filename + "." + extension
+        file = open(directory, "r", encoding='UTF-8')
+        content = file.readlines()
         file.close()
         return content
     
@@ -21,19 +28,32 @@ class SQLRunner:
         
         print("Connecting to the server")
         conn = pyodbc.connect(connectionDetails)
-        
-        batchSql = SQLRunner.__readFile(batch, "sql");
         cursor = conn.cursor()
         
+        batchSql = SQLRunner.__readFileLBL(batch, "sql");
         print("Executing the sql file")
-        cursor.execute('SELECT * FROM conferences')
-        
-        print("Done")
         
         if show:
+            for line in batchSql:
+                query = line.rstrip('\n')
+                if not query: continue
+                print(query)
+            
+                cursor.execute(query)
+                
             for row in cursor:
                 print(row)
         
+        else:
+            for line in batchSql:
+                query = line.rstrip('\n')
+                if not query: continue
+                print(query)
+            
+                cursor.execute(query)
+                conn.commit()
+            
+        print("Done")
         conn.close()
 
 if __name__ == '__main__':
