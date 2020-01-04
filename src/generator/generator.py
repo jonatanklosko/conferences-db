@@ -182,12 +182,20 @@ class RandomTools:
         return numpy.random.randint(15) * 100 + numpy.random.randint(30)
     
     @staticmethod
-    def getPrice():
-        pass
+    def getWorkshopPrice():
+        return 50 + 5*numpy.random.randint(30)
     
     @staticmethod
-    def getAttendeesLimit():
-        pass
+    def getConfDayPrice():
+        return 100 + 10*numpy.random.randint(40)
+    
+    @staticmethod
+    def getConfDayAttendeesLimit():
+        return 200
+    
+    @staticmethod
+    def getWorkshopAttendeesLimit():
+        return 10 + 5*numpy.random.randint(18)
     
     @staticmethod
     def getCompanyName():
@@ -195,11 +203,28 @@ class RandomTools:
     
     @staticmethod
     def getPhoneNumber():
-        pass
+        return 100000000 + numpy.random.randint(900000000)
     
     @staticmethod
     def getEmail():
         pass
+    
+    @staticmethod
+    def getTimeSlot():
+        min_start = datetime.datetime(1, 1, 1, 8, 0)
+        delta = datetime.timedelta(minutes=50)
+        beforeend = datetime.timedelta(minutes=5)
+        
+        s = numpy.random.randint(13)
+        t = 2 + numpy.random.randint(4)
+        
+        if s + t >= 16:
+            t = 16 - s - 1
+        
+        start = min_start + s * delta
+        end = min_start + (s+t) * delta - beforeend
+        
+        return start.time(), end.time()
 
 class Generator:
     @staticmethod
@@ -210,20 +235,35 @@ class Generator:
     def __emptyDataBase(file):
         # prepares queries to make sure that database is empty
         ExportTools.appendLine(file, "DELETE FROM booking_payments;")
+        ExportTools.appendLine(file, "DBCC CHECKIDENT(booking_payments, RESEED, 0);")
         ExportTools.appendLine(file, "DELETE FROM companies;")
+        ExportTools.appendLine(file, "DBCC CHECKIDENT(companies, RESEED, 0);")
         ExportTools.appendLine(file, "DELETE FROM conference_prices;")
+        ExportTools.appendLine(file, "DBCC CHECKIDENT(conference_prices, RESEED, 0);")
         ExportTools.appendLine(file, "DELETE FROM individual_clients;")
+        ExportTools.appendLine(file, "DBCC CHECKIDENT(individual_clients, RESEED, 0);")
         ExportTools.appendLine(file, "DELETE FROM workshop_enrollments;")
+        ExportTools.appendLine(file, "DBCC CHECKIDENT(workshop_enrollments, RESEED, 0);")
         ExportTools.appendLine(file, "DELETE FROM day_enrollments;")
+        ExportTools.appendLine(file, "DBCC CHECKIDENT(day_enrollments, RESEED, 0);")
         ExportTools.appendLine(file, "DELETE FROM attendees;")
+        ExportTools.appendLine(file, "DBCC CHECKIDENT(attendees, RESEED, 0);")
         ExportTools.appendLine(file, "DELETE FROM people;")
+        ExportTools.appendLine(file, "DBCC CHECKIDENT(people, RESEED, 0);")
         ExportTools.appendLine(file, "DELETE FROM workshop_bookings;")
+        ExportTools.appendLine(file, "DBCC CHECKIDENT(workshop_bookings, RESEED, 0);")
         ExportTools.appendLine(file, "DELETE FROM day_bookings;")
+        ExportTools.appendLine(file, "DBCC CHECKIDENT(day_bookings, RESEED, 0);")
         ExportTools.appendLine(file, "DELETE FROM workshop_interests;")
+        ExportTools.appendLine(file, "DBCC CHECKIDENT(workshop_interests, RESEED, 0);")
         ExportTools.appendLine(file, "DELETE FROM bookings;")
+        ExportTools.appendLine(file, "DBCC CHECKIDENT(bookings, RESEED, 0);")
         ExportTools.appendLine(file, "DELETE FROM clients;")
+        ExportTools.appendLine(file, "DBCC CHECKIDENT(clients, RESEED, 0);")
         ExportTools.appendLine(file, "DELETE FROM workshops;")
+        ExportTools.appendLine(file, "DBCC CHECKIDENT(workshops, RESEED, 0);")
         ExportTools.appendLine(file, "DELETE FROM conference_days;")
+        ExportTools.appendLine(file, "DBCC CHECKIDENT(conference_days, RESEED, 0);")
         ExportTools.appendLine(file, "DELETE FROM conferences;")
         ExportTools.appendLine(file, "DBCC CHECKIDENT(conferences, RESEED, 0);")
         ExportTools.appendLine(file, "")
@@ -233,14 +273,19 @@ class Generator:
         # initializes conferences for a 3-year-run of a company
         abs_beginning = datetime.datetime(2018, 1, 7)
         week = datetime.timedelta(days=7)
+        day = datetime.timedelta(days=1)
         
         confDistribution = RandomTools.getPoissonConfDistribution(2,153)
         # gets conference distribution during a 3-year period (as weeks)
         # based on a Poisson distribution (expected 2 conferences per month)
         
         conferences = list()
+        conf_idx = 0
+        confday_idx = 0
         
         for week_no in confDistribution:
+            conf_idx += 1
+            
             duration = RandomTools.getConfDuration()
             end = abs_beginning + week_no * week
             start = end - datetime.timedelta(days=duration)
@@ -259,10 +304,61 @@ class Generator:
                 discount
             )
             ExportTools.appendLine(file, conf_query)
+            
+            for i in range(duration):
+                confday_idx += 1
+                
+                date = start + i * day
+                daylimit = RandomTools.getConfDayAttendeesLimit()
+                
+                confday_query = "INSERT INTO conference_days VALUES({}, '{}', {})".format(
+                    conf_idx,
+                    date.isoformat()[:10],
+                    daylimit
+                )
+                ExportTools.appendLine(file, confday_query)
+                
+                confday_price = RandomTools.getConfDayPrice()
+                
+                confprice_query = "INSERT INTO conference_prices VALUES({}, '{}', {})".format(
+                    conf_idx,
+                    start.isoformat()[:10],
+                    confday_price
+                )
+                ExportTools.appendLine(file, confprice_query)
+                
+                confprice_query_d = "INSERT INTO conference_prices VALUES({}, '{}', {})".format(
+                    conf_idx,
+                    (start - 2 * week).isoformat()[:10],
+                    0.8 * confday_price
+                )
+                ExportTools.appendLine(file, confprice_query_d)
+                
+                workshops = RandomTools.getNumOfWorkshops()
+                
+                for i in range(workshops):
+                    workshop_name = RandomTools.getWorkshopName()
+                    descr = RandomTools.getWorkshopDescription()
+                    timeslot_start, timeslot_end = RandomTools.getTimeSlot()
+                    room = RandomTools.getRoomNo()
+                    workshop_price = RandomTools.getWorkshopPrice()
+                    attendee_limit = RandomTools.getWorkshopAttendeesLimit()
+                    
+                    workshop_query = "INSERT INTO workshops VALUES"+\
+                                     "({}, '{}', '{}', '{}', '{}', '{}', {}, {});".format(
+                        confday_idx,
+                        workshop_name,
+                        descr,
+                        timeslot_start,
+                        timeslot_end,
+                        room,
+                        workshop_price,
+                        attendee_limit
+                    )
+                    ExportTools.appendLine(file, workshop_query)
+            
             conferences.append((start, end))
         
-        #for start, end in conferences:
-        #    print(start.isoformat()[:10], end.isoformat()[:10])
         
         ExportTools.appendLine(file, "")
     
