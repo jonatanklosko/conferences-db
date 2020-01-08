@@ -213,8 +213,14 @@ class RandomTools:
             return companies
     
     @staticmethod
-    def getPhoneNumber():
-        return 1000000000 + numpy.random.randint(9000000000)
+    def getPhoneNumber(seed=-1):
+        prime = 71524157
+        
+        if seed == -1: seed = 503541664
+        a = numpy.random.randint(50)
+        
+        return 200000000 + (seed + a * prime) % 600000000
+    
     
     @staticmethod
     def getTimeSlot():
@@ -255,6 +261,21 @@ class RandomTools:
     def getEmailPerson(firstname, lastname):
         num = numpy.random.randint(10000)
         return "{}{}{}@email.pl".format(firstname.lower(), lastname.lower(), num)
+    
+    @staticmethod
+    def getStudentCard(seed=-1):
+        prime = 11701
+        
+        if seed == -1: seed = 387541
+        a = numpy.random.randint(50)
+        
+        isStudent = False
+        r = numpy.random.random()
+        if r < 0.4: isStudent = True
+        
+        newValue = 200000 + (seed + a * prime) % 300000
+        
+        return isStudent, newValue
 
 class Generator:
     @staticmethod
@@ -264,6 +285,30 @@ class Generator:
     @staticmethod
     def __emptyDataBase(file):
         # prepares queries to make sure that database is empty
+        
+        ExportTools.appendLine(file, "EXEC sp_msforeachtable 'ALTER TABLE ? NOCHECK CONSTRAINT all';")
+        
+        # inserting dummy values (just in case)
+        # needed due to dbcc checkident usage to assure right indexing
+        ExportTools.appendLine(file, "INSERT INTO conferences VALUES ('.', '.', '.', '.', '.', 1);")
+        ExportTools.appendLine(file, "INSERT INTO conference_days VALUES (1, '2050-01-01', 1);")
+        ExportTools.appendLine(file, "INSERT INTO conference_prices VALUES (1, '2050-01-01', 1);")
+        ExportTools.appendLine(file, "INSERT INTO workshops VALUES (1, '.', '.', '08:00:00', '08:00:00', '.', 1, 1);")
+        ExportTools.appendLine(file, "INSERT INTO people VALUES ('.', '.', '.');")
+        ExportTools.appendLine(file, "INSERT INTO clients VALUES ('.', '.', '.', '.');")
+        ExportTools.appendLine(file, "INSERT INTO companies VALUES (1, '.', '.');")
+        ExportTools.appendLine(file, "INSERT INTO individual_clients VALUES (1, 1, '.', '.');")
+        ExportTools.appendLine(file, "INSERT INTO booking_payments VALUES (1, 1, 1);")
+        ExportTools.appendLine(file, "INSERT INTO workshop_enrollments VALUES (1, 1);")
+        ExportTools.appendLine(file, "INSERT INTO day_enrollments VALUES (1, 1);")
+        ExportTools.appendLine(file, "INSERT INTO attendees VALUES (1);")
+        ExportTools.appendLine(file, "INSERT INTO workshop_bookings VALUES (1, 1, 1, '1900-01-01 00:00:00');")
+        ExportTools.appendLine(file, "INSERT INTO day_bookings VALUES (1, 1, 1, '1900-01-01 00:00:00');")
+        ExportTools.appendLine(file, "INSERT INTO workshop_interests VALUES (1, 1);")
+        ExportTools.appendLine(file, "INSERT INTO bookings VALUES (1, 1, '1900-01-01 00:00:00','1900-01-01 00:00:00');")
+        ExportTools.appendLine(file, "")
+        
+        # cleaning up and reseeding
         ExportTools.appendLine(file, "DELETE FROM booking_payments;")
         ExportTools.appendLine(file, "DBCC CHECKIDENT(booking_payments, RESEED, 0);")
         ExportTools.appendLine(file, "DELETE FROM companies;")
@@ -296,6 +341,8 @@ class Generator:
         ExportTools.appendLine(file, "DBCC CHECKIDENT(conference_days, RESEED, 0);")
         ExportTools.appendLine(file, "DELETE FROM conferences;")
         ExportTools.appendLine(file, "DBCC CHECKIDENT(conferences, RESEED, 0);")
+        
+        ExportTools.appendLine(file, "EXEC sp_msforeachtable 'ALTER TABLE ? WITH CHECK CHECK CONSTRAINT all';")
         ExportTools.appendLine(file, "")
     
     @staticmethod
@@ -419,9 +466,70 @@ class Generator:
         return numofpeople
     
     @staticmethod
-    def __makeCompanies(file):
-        companies = RandomTools.getCompany(gerRandom=False)
+    def __fillCompanies(file):
+        companies = RandomTools.getCompany(getRandom=False)
         numofcompanies = len(companies)
+        
+        cli_idx = 0
+        phone_num = -1 # initial seed
+        
+        for name, email in companies:
+            cli_idx += 1
+            
+            city, postal = RandomTools.getCityAndPostalCode()
+            street, build_no = RandomTools.getStreetAndBuildingNo()
+            
+            client_query = "INSERT INTO clients VALUES('{}', '{}', '{}', '{}')".format(
+                city,
+                street,
+                postal,
+                build_no
+            )
+            ExportTools.appendLine(file, client_query)
+            
+            phone_num = RandomTools.getPhoneNumber(phone_num)
+            company_query = "INSERT INTO companies VALUES({}, '{}', '{}')".format(
+                cli_idx,
+                name,
+                phone_num
+            )
+            ExportTools.appendLine(file, company_query)
+        
+        ExportTools.appendLine(file, "")
+        return numofcompanies
+    
+    def __fillIndividuals(file, numofcompanies, numofpeople):
+        cli_idx = numofcompanies
+        per_idx = 0
+        phone_num = -1 # initial seed
+        studentcard_num = -1 # initial seed
+        
+        for _ in range(numofpeople):
+            cli_idx += 1
+            per_idx += 1
+            
+            city, postal = RandomTools.getCityAndPostalCode()
+            street, build_no = RandomTools.getStreetAndBuildingNo()
+            
+            client_query = "INSERT INTO clients VALUES('{}', '{}', '{}', '{}')".format(
+                city,
+                street,
+                postal,
+                build_no
+            )
+            ExportTools.appendLine(file, client_query)
+            
+            phone_num = RandomTools.getPhoneNumber(phone_num)
+            isStudent, studentcard_num = RandomTools.getStudentCard(studentcard_num)
+            individuals_query = "INSERT INTO individual_clients VALUES({}, {}, '{}', '{}')".format(
+                cli_idx,
+                per_idx,
+                phone_num,
+                studentcard_num if isStudent else "NULL"
+            )
+            ExportTools.appendLine(file, individuals_query)
+        
+        ExportTools.appendLine(file, "")
     
     def CREATE(dataBase):
         file = ExportTools.openFile("baza", "sql", withClear=True)
@@ -431,6 +539,8 @@ class Generator:
         
         conferences, confdays, confprices, workshops = Generator.__makeConferences(file)
         numofpeople = Generator.__makePeople(file)
+        numofcompanies = Generator.__fillCompanies(file)
+        Generator.__fillIndividuals(file, numofcompanies, numofpeople)
         
         ExportTools.closeFile(file)
 
