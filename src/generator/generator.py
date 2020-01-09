@@ -657,6 +657,8 @@ class Generator:
                                 if not alreadyenrolled:
                                     dayenrolls.append((day_booking_idx, person_seed))
                                     day_enroll_idx += 1
+                                else:
+                                    continue
                                 
                                 workenrolls.append((day_enroll_idx, work_booking_idx))
                         
