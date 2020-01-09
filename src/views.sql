@@ -12,7 +12,7 @@ JOIN people ON people.id = attendees.person_id
 JOIN day_enrollments ON attendees.id = day_enrollments.attendee_id
 JOIN day_bookings ON day_bookings.id = day_enrollments.day_booking_id
 JOIN bookings ON bookings.id = day_bookings.booking_id
-JOIN clients ON clients.id = bookings.id
+JOIN clients ON clients.id = bookings.client_id
 LEFT JOIN companies ON companies.client_id = clients.id;
 GO
 
