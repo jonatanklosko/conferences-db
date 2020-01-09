@@ -124,7 +124,7 @@ class RandomTools:
     
     @staticmethod
     def getStudentDiscount():
-        discount = numpy.random.randint(21)
+        discount = numpy.random.randint(20)
         return float(discount) / 20
     
     @staticmethod
@@ -217,10 +217,9 @@ class RandomTools:
         prime = 71524157
         
         if seed == -1: seed = 503541664
-        a = numpy.random.randint(50)
+        a = numpy.random.randint(50) + 1
         
         return 200000000 + (seed + a * prime) % 600000000
-    
     
     @staticmethod
     def getTimeSlot():
@@ -267,7 +266,7 @@ class RandomTools:
         prime = 11701
         
         if seed == -1: seed = 387541
-        a = numpy.random.randint(50)
+        a = numpy.random.randint(50) + 1
         
         isStudent = False
         r = numpy.random.random()
@@ -276,6 +275,23 @@ class RandomTools:
         newValue = 200000 + (seed + a * prime) % 300000
         
         return isStudent, newValue
+    
+    @staticmethod
+    def getNextPerson(num, seed=-1):
+        prime = 739
+        
+        if seed == -1: seed = numpy.random.randint(num)
+        a = numpy.random.randint(15) + 1
+        
+        return 1 + (seed + a * prime) % num
+    
+    @staticmethod
+    def getNextCompany(num, seed=-1):
+        prime = 17
+        
+        if seed == -1: seed = numpy.random.randint(num)
+        
+        return 1 + (seed + prime) % num
 
 class Generator:
     @staticmethod
@@ -394,7 +410,7 @@ class Generator:
                 confday_price
             )
             ExportTools.appendLine(file, confprice_query)
-            confprices.append((confday_idx, conf_idx))
+            confprices.append((confday_idx, conf_idx, confday_price))
                 
             confprice_query_d = "INSERT INTO conference_prices VALUES({}, '{}', {})".format(
                 conf_idx,
@@ -402,7 +418,7 @@ class Generator:
                 0.8 * confday_price
             )
             ExportTools.appendLine(file, confprice_query_d)
-            confprices.append((confday_idx, conf_idx))
+            confprices.append((confday_idx, conf_idx, 0.8 * confday_price))
             
             for i in range(duration):
                 confday_idx += 1
@@ -416,9 +432,9 @@ class Generator:
                     daylimit
                 )
                 ExportTools.appendLine(file, confday_query)
-                confdays.append(conf_idx)
                 
                 workshopsnum = RandomTools.getNumOfWorkshops()
+                confdays.append((conf_idx, confday_idx, workshopsnum))
                 
                 for i in range(workshopsnum):
                     workshop_name = RandomTools.getWorkshopName()
@@ -442,7 +458,7 @@ class Generator:
                     ExportTools.appendLine(file, workshop_query)
                     workshops.append((confday_idx, conf_idx, workshop_price, attendee_limit))
             
-            conferences.append((duration, discount))
+            conferences.append((duration, start, discount))
         
         ExportTools.appendLine(file, "")
         return conferences, confdays, confprices, workshops
@@ -503,6 +519,7 @@ class Generator:
         per_idx = 0
         phone_num = -1 # initial seed
         studentcard_num = -1 # initial seed
+        studentbool = list()
         
         for _ in range(numofpeople):
             cli_idx += 1
@@ -521,15 +538,188 @@ class Generator:
             
             phone_num = RandomTools.getPhoneNumber(phone_num)
             isStudent, studentcard_num = RandomTools.getStudentCard(studentcard_num)
-            individuals_query = "INSERT INTO individual_clients VALUES({}, {}, '{}', '{}')".format(
-                cli_idx,
-                per_idx,
-                phone_num,
-                studentcard_num if isStudent else "NULL"
+            
+            if isStudent:
+                individuals_query = "INSERT INTO individual_clients VALUES({}, {}, '{}', '{}')".format(
+                    cli_idx,
+                    per_idx,
+                    phone_num,
+                    studentcard_num
+                )
+                ExportTools.appendLine(file, individuals_query)
+            else:
+                individuals_query = "INSERT INTO individual_clients VALUES({}, {}, '{}', {})".format(
+                    cli_idx,
+                    per_idx,
+                    phone_num,
+                    "NULL"
+                )
+                ExportTools.appendLine(file, individuals_query)
+            
+            studentbool.append(isStudent)
+            
+            attendees_query = "INSERT INTO attendees VALUES({})".format(
+                per_idx
             )
-            ExportTools.appendLine(file, individuals_query)
+            ExportTools.appendLine(file, attendees_query)
         
         ExportTools.appendLine(file, "")
+        return studentbool
+    
+    @staticmethod
+    def __assingPeopleToWorkshops(
+            file, conferences, confdays, confprices, workshops, numofcompanies, numofpeople, isstudent):
+        conf_idx = 0
+        confprice_idx = -1
+        confday_idx = 0
+        workshop_idx = 0
+        
+        booking_idx = 0
+        day_booking_idx = 0
+        work_booking_idx = 0
+        day_enroll_idx = 0
+        
+        day = datetime.timedelta(days=1)
+        
+        charge = [0]*numofpeople
+        withcompany = [0]*numofpeople
+        people = list()
+        
+        for conf_duration, start, discount in conferences:
+            conf_idx += 1
+            confprice_idx += 2
+            person_seed = -1
+            company_seed = -1
+            
+            for i, _ in enumerate(withcompany): withcompany[i] = 0
+            
+            # company reservations
+            
+            for i in range(numpy.random.randint(numofcompanies)):
+                booking_idx += 1
+                confday_idx_t = confday_idx
+                workshop_idx_s = workshop_idx
+                
+                c_charge = 0
+                people.clear()
+                company_seed = RandomTools.getNextCompany(numofcompanies, company_seed)
+                
+                bookings_query = "INSERT INTO bookings VALUES({}, {}, '{}', {})".format(
+                    company_seed,
+                    conf_idx,
+                    (start - (15 + numpy.random.randint(10)) * day).isoformat()[:10] + " 09:00:00",
+                    "NULL"
+                )
+                ExportTools.appendLine(file, bookings_query)
+                
+                for _ in range(conf_duration):
+                    confday_idx_t += 1
+                    workshop_idx_t = workshop_idx_s
+                    daybooking = [booking_idx, confday_idx_t, 0, "NULL"]
+                    for i, _ in enumerate(charge): charge[i] = 0
+
+                    _, _, workshopsnum = confdays[confday_idx_t-1]
+                    workshopbook_queries = list()
+                    
+                    dayenrolls = list()
+                    workenrolls = list()
+                    
+                    for _ in range(workshopsnum):
+                        workshop_idx_t += 1
+
+                        _, _, workshop_price, attendee_limit = workshops[workshop_idx_t-1]
+                        people_this_workshop = 0
+                        
+                        for i in range(attendee_limit):
+                            person_seed = RandomTools.getNextPerson(numofpeople, person_seed)
+                            if numpy.random.random() < 0.2:
+                                if withcompany[person_seed-1] == 0:
+                                    withcompany[person_seed-1] = company_seed
+                                elif withcompany[person_seed-1] != company_seed:
+                                    continue
+                                if daybooking[2] == 0:
+                                    day_booking_idx += 1
+                                    work_booking_idx += 1
+                                daybooking[2] += 1
+                                
+                                if charge[person_seed-1] == 0:
+                                    c_charge += confprices[confprice_idx][2]
+                                    charge[person_seed-1] = 1
+                                
+                                c_charge += workshop_price
+                                people_this_workshop += 1
+                                
+                                alreadyenrolled = False
+                                for _, pers in dayenrolls:
+                                    if pers == person_seed:
+                                        alreadyenrolled = True
+                                
+                                if not alreadyenrolled:
+                                    dayenrolls.append((day_booking_idx, person_seed))
+                                    day_enroll_idx += 1
+                                
+                                workenrolls.append((day_enroll_idx, work_booking_idx))
+                        
+                        if people_this_workshop > 0:
+                            workshopbook_query = "INSERT INTO workshop_bookings VALUES({}, {}, {}, {})".format(
+                                day_booking_idx,
+                                workshop_idx_t,
+                                people_this_workshop,
+                                "NULL"
+                            )
+                            workshopbook_queries.append(workshopbook_query)
+                            
+                            a = workshops[workshop_idx_t-1]
+                            workshops[workshop_idx_t-1] = (a[0], a[1], a[2], a[3]-people_this_workshop)
+                    
+                    if daybooking[2] > 0:
+                        daybook_query = "INSERT INTO day_bookings VALUES({}, {}, {}, {})".format(
+                            daybooking[0],
+                            daybooking[1],
+                            daybooking[2],
+                            daybooking[3],
+                        )
+                        ExportTools.appendLine(file, daybook_query)
+                    
+                        for workshopbook_query in workshopbook_queries:
+                            ExportTools.appendLine(file, workshopbook_query)
+                    
+                        for daybooking_id, attendee in dayenrolls:
+                            dayenrolls_query = "INSERT INTO day_enrollments VALUES({}, {})".format(
+                                daybooking_id,
+                                attendee
+                            )
+                            ExportTools.appendLine(file, dayenrolls_query)
+                        
+                        for dayenroll_id, workbooking_id in workenrolls:
+                            workenrolls_query = "INSERT INTO workshop_enrollments VALUES({}, {})".format(
+                                dayenroll_id,
+                                workbooking_id
+                            )
+                            ExportTools.appendLine(file, workenrolls_query)
+            
+                payments_query = "INSERT INTO booking_payments VALUES({}, {}, '{}')".format(
+                    booking_idx,
+                    c_charge,
+                    (start - (1 + numpy.random.randint(5)) * day).isoformat()[:10] + " 09:00:00"
+                )
+                ExportTools.appendLine(file, payments_query)
+            
+            for i, _ in enumerate(charge): charge[i] = 0
+            
+            for _ in range(conf_duration):
+                confday_idx += 1
+                
+                _, _, workshopsnum = confdays[confday_idx-1]
+                
+                for _ in range(workshopsnum):
+                    workshop_idx += 1
+                    
+                    _, _, workshop_price, attendee_limit = workshops[workshop_idx-1]
+                    
+                    for i in range(attendee_limit):
+                        person_seed = RandomTools.getNextPerson(numofpeople, person_seed)
+                        people.append(person_seed)
     
     def CREATE(dataBase):
         file = ExportTools.openFile("baza", "sql", withClear=True)
@@ -540,7 +730,10 @@ class Generator:
         conferences, confdays, confprices, workshops = Generator.__makeConferences(file)
         numofpeople = Generator.__makePeople(file)
         numofcompanies = Generator.__fillCompanies(file)
-        Generator.__fillIndividuals(file, numofcompanies, numofpeople)
+        isstudent = Generator.__fillIndividuals(file, numofcompanies, numofpeople)
+        
+        Generator.__assingPeopleToWorkshops(
+            file, conferences, confdays, confprices, workshops, numofcompanies, numofpeople, isstudent)
         
         ExportTools.closeFile(file)
 
