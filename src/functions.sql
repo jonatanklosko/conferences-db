@@ -70,8 +70,8 @@ RETURN (
 );
 GO
 
-DROP FUNCTION IF EXISTS workshop_day_attendees; GO
-CREATE FUNCTION workshop_day_attendees(
+DROP FUNCTION IF EXISTS workshop_attendees; GO
+CREATE FUNCTION workshop_attendees(
   @workshop_id INT
 )
 RETURNS TABLE

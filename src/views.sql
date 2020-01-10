@@ -1,7 +1,7 @@
 DROP VIEW IF EXISTS badges_view; GO
 CREATE VIEW badges_view
 AS
-SELECT
+SELECT DISTINCT
   bookings.conference_id,
   people.first_name,
   people.last_name,
@@ -33,6 +33,7 @@ DROP VIEW IF EXISTS upcoming_conferences_summary_view; GO
 CREATE VIEW upcoming_conferences_summary_view
 AS
 SELECT
+  conferences.id conference_id,
   conferences.name conference_name,
   MIN(conference_days.date) start_date,
   MAX(conference_days.date) end_date,
