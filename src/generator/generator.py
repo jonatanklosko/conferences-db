@@ -599,7 +599,6 @@ class Generator:
         
         charge = [0]*numofpeople
         withcompany = [0]*numofpeople
-        people = list()
         
         for conf_duration, start, discount in conferences:
             conf_idx += 1
@@ -617,7 +616,6 @@ class Generator:
                 workshop_idx_s = workshop_idx
                 
                 c_charge = 0
-                people.clear()
                 company_seed = RandomTools.getNextCompany(numofcompanies, company_seed)
                 
                 bookings_query = "INSERT INTO bookings VALUES({}, {}, '{}', {})".format(
@@ -723,10 +721,17 @@ class Generator:
                 )
                 ExportTools.appendLine(file, payments_query)
             
+            # individual reservations
+            
+            person_seed = -1
+            people = list()
+            people_wi = list()
+            
             for i, _ in enumerate(charge): charge[i] = 0
             
             for _ in range(conf_duration):
                 confday_idx += 1
+                thisday = [False]*numofpeople
                 
                 _, _, workshopsnum = confdays[confday_idx-1]
                 
@@ -737,7 +742,124 @@ class Generator:
                     
                     for i in range(attendee_limit):
                         person_seed = RandomTools.getNextPerson(numofpeople, person_seed)
-                        people.append(person_seed)
+                        if withcompany[person_seed-1] != 0:
+                            continue
+                        if thisday[person_seed-1]:
+                            continue
+                        thisday[person_seed-1] = True
+                        
+                        alreadyenrolled = False
+                        for i, (idx, _) in enumerate(people):
+                            if idx == person_seed:
+                                alreadyenrolled = True
+                                peop_idx = i
+                        
+                        if not alreadyenrolled:
+                            people.append((person_seed, list([workshop_idx])))
+                        else:
+                            people[peop_idx][1].append(workshop_idx)
+                    
+                    for i in range(numpy.random.randint(5)):
+                        person_seed = RandomTools.getNextPerson(numofpeople, person_seed)
+                        if withcompany[person_seed-1] != 0:
+                            continue
+                        if thisday[person_seed-1]:
+                            continue
+                        thisday[person_seed-1] = True
+                        
+                        alreadyenrolled = False
+                        for i, (idx, _) in enumerate(people_wi):
+                            if idx == person_seed:
+                                alreadyenrolled = True
+                                peop_idx = i
+                        
+                        if not alreadyenrolled:
+                            people_wi.append((person_seed, list([workshop_idx])))
+                        else:
+                            people_wi[peop_idx][1].append(workshop_idx)
+                        
+            for pers_idx, workshop_idxs in people:
+                daysbefore = 2 + numpy.random.randint(23)
+                booking_idx += 1
+                
+                confdayid, confid, _, _ = workshops[workshop_idxs[0]-1]
+                i_charge = 0
+                
+                bookings_query = "INSERT INTO bookings VALUES({}, {}, '{}', {})".format(
+                    pers_idx + numofcompanies,
+                    conf_idx,
+                    (start - daysbefore * day).isoformat()[:10] + " 09:00:00",
+                    "NULL"
+                )
+                ExportTools.appendLine(file, bookings_query)
+                
+                for workshopid in workshop_idxs:
+                    day_booking_idx += 1
+                    work_booking_idx += 1
+                    day_enroll_idx += 1
+                    confdayid, confid, workshop_price, _ = workshops[workshopid-1]
+                    
+                    if daysbefore >= 14:
+                        i_charge += confprices[confprice_idx][2]
+                    else:
+                        i_charge += confprices[confprice_idx-1][2]
+                    
+                    i_charge += workshop_price
+                    
+                    daybook_query = "INSERT INTO day_bookings VALUES({}, {}, {}, {})".format(
+                        booking_idx,
+                        confdayid,
+                        1,
+                        "NULL"
+                    )
+                    ExportTools.appendLine(file, daybook_query)
+                    
+                    workshopbook_query = "INSERT INTO workshop_bookings VALUES({}, {}, {}, {})".format(
+                        day_booking_idx,
+                        workshopid,
+                        1,
+                        "NULL"
+                    )
+                    ExportTools.appendLine(file, workshopbook_query)
+                    
+                    dayenrolls_query = "INSERT INTO day_enrollments VALUES({}, {})".format(
+                        day_booking_idx,
+                        pers_idx
+                    )
+                    ExportTools.appendLine(file, dayenrolls_query)
+                    
+                    workenrolls_query = "INSERT INTO workshop_enrollments VALUES({}, {})".format(
+                        day_enroll_idx,
+                        work_booking_idx
+                    )
+                    ExportTools.appendLine(file, workenrolls_query)
+                
+                if isstudent[person_seed-1]:
+                    i_charge = (1 - discount) * i_charge
+                
+                payments_query = "INSERT INTO booking_payments VALUES({}, {}, '{}')".format(
+                    booking_idx,
+                    i_charge,
+                    (start - (1 + numpy.random.randint(daysbefore-1)) * day).isoformat()[:10] + " 09:00:00"
+                )
+                ExportTools.appendLine(file, payments_query)
+            
+                hasinterest = False
+                for i, (idx, _) in enumerate(people_wi):
+                    if idx == person_seed:
+                        hasinterest = True
+                        peop_idx = i
+                
+                if hasinterest:
+                    _, workshopintids = people_wi[peop_idx]
+                    
+                    for wiid in workshopintids:
+                        workshopints_query = "INSERT INTO workshop_interests VALUES({}, {})".format(
+                            wiid,
+                            booking_idx
+                        )
+                        ExportTools.appendLine(file, workshopints_query)
+                        
     
     def CREATE(dataBase):
         file = ExportTools.openFile("baza", "sql", withClear=True)
