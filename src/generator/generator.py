@@ -864,7 +864,7 @@ class Generator:
     def CREATE(dataBase):
         file = ExportTools.openFile("baza", "sql", withClear=True)
         
-        Generator.__useStatement(file, dataBase)
+        #Generator.__useStatement(file, dataBase) # uncomment if needed
         Generator.__emptyDataBase(file)
         
         conferences, confdays, confprices, workshops = Generator.__makeConferences(file)
