@@ -291,3 +291,69 @@ BEGIN CATCH
   THROW 51000, @error, 1;
 END CATCH;
 GO
+
+DROP PROCEDURE IF EXISTS add_day_enrollment;
+CREATE PROCEDURE add_day_enrollment
+  @day_booking_id INT,
+  @attendee_id INT
+AS
+BEGIN TRY
+  IF NOT EXISTS (SELECT 1 FROM day_bookings WHERE id = @day_booking_id)
+  BEGIN
+    THROW 51000, 'Day booking with the given id does not exist.', 1;
+  END
+  IF NOT EXISTS (SELECT 1 FROM attendees WHERE id = @attendee_id)
+  BEGIN
+    THROW 51000, 'Attendee with the given id does not exist.', 1;
+  END
+  IF EXISTS (SELECT 1 FROM day_enrollments WHERE attendee_id = @attendee_id AND day_booking_id = @day_booking_id)
+  BEGIN
+    THROW 51000, 'The given attendee is already enrolled in the given day.', 1;
+  END
+  INSERT INTO day_enrollments(day_booking_id, attendee_id)
+  VALUES (@day_booking_id, @attendee_id);
+END TRY
+BEGIN CATCH
+  DECLARE @error NVARCHAR(2048) = 'Failed to add enrollment for the conference day. Got an error: ' + ERROR_MESSAGE();
+  THROW 51000, @error, 1;
+END CATCH;
+GO
+
+DROP PROCEDURE IF EXISTS add_workshop_enrollment;
+CREATE PROCEDURE add_workshop_enrollment
+  @workshop_booking_id INT,
+  @attendee_id INT
+AS
+BEGIN TRY
+  IF NOT EXISTS (SELECT 1 FROM workshop_bookings WHERE id = @workshop_booking_id)
+  BEGIN
+    THROW 51000, 'Workshop booking with the given id does not exist.', 1;
+  END
+  IF NOT EXISTS (SELECT 1 FROM attendees WHERE id = @attendee_id)
+  BEGIN
+    THROW 51000, 'Attendee with the given id does not exist.', 1;
+  END
+  DECLARE @day_enrollment_id INT = (
+    SELECT day_bookings.id
+    FROM workshop_bookings
+    JOIN day_bookings ON workshop_bookings.day_booking_id = day_bookings.id
+    JOIN day_enrollments ON day_bookings.id = day_enrollments.day_booking_id
+    WHERE workshop_bookings.id = @workshop_booking_id
+      AND day_enrollments.attendee_id = @attendee_id
+  );
+  IF @day_enrollment_id IS NULL
+  BEGIN
+    THROW 51000, 'The given attendee is not enrolled in conference day on which the workshop takes place.', 1;
+  END
+  IF EXISTS (SELECT 1 FROM workshop_enrollments WHERE day_enrollment_id = @day_enrollment_id AND workshop_booking_id = @workshop_booking_id)
+  BEGIN
+    THROW 51000, 'The given attendee is already enrolled in the given workshop.', 1;
+  END
+  INSERT INTO workshop_enrollments(day_enrollment_id, workshop_booking_id)
+  VALUES (@day_enrollment_id, @workshop_booking_id);
+END TRY
+BEGIN CATCH
+  DECLARE @error NVARCHAR(2048) = 'Failed to add enrollment for the workshop. Got an error: ' + ERROR_MESSAGE();
+  THROW 51000, @error, 1;
+END CATCH;
+GO
