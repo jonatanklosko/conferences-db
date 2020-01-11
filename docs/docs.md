@@ -424,7 +424,7 @@ Widok zawierający informacje potrzebne do stworzenia identyfikatorów dla uczes
 ```sql
 CREATE VIEW badges_view
 AS
-SELECT
+SELECT DISTINCT
   bookings.conference_id,
   people.first_name,
   people.last_name,
@@ -435,7 +435,7 @@ JOIN people ON people.id = attendees.person_id
 JOIN day_enrollments ON attendees.id = day_enrollments.attendee_id
 JOIN day_bookings ON day_bookings.id = day_enrollments.day_booking_id
 JOIN bookings ON bookings.id = day_bookings.booking_id
-JOIN clients ON clients.id = bookings.id
+JOIN clients ON clients.id = bookings.client_id
 LEFT JOIN companies ON companies.client_id = clients.id;
 ```
 
@@ -466,6 +466,7 @@ w tym obecnie obowiązującą cene za jeden dzień oraz liczbe wolnych miejsc na
 CREATE VIEW upcoming_conferences_summary_view
 AS
 SELECT
+  conferences.id conference_id,
   conferences.name conference_name,
   MIN(conference_days.date) start_date,
   MAX(conference_days.date) end_date,
@@ -567,12 +568,12 @@ RETURN (
 );
 ```
 
-### `workshop_day_attendees`
+### `workshop_attendees`
 
 Funkcja zwracająca listę uczestników na wskazany warsztat.
 
 ```sql
-CREATE FUNCTION workshop_day_attendees(
+CREATE FUNCTION workshop_attendees(
   @workshop_id INT
 )
 RETURNS TABLE
