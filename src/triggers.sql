@@ -83,3 +83,37 @@ BEGIN
   END
 END;
 GO
+
+DROP TRIGGER IF EXISTS validate_new_day_booking_enough_spots_trigger; GO
+CREATE TRIGGER validate_new_day_booking_enough_spots_trigger
+ON day_bookings
+AFTER INSERT
+AS
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM inserted inserted_day_bookings
+    WHERE dbo.available_conference_day_spots(inserted_day_bookings.conference_day_id) < 0
+  )
+  BEGIN
+    THROW 51000, 'Not enough spots available for the conference day.', 1;
+  END
+END;
+GO
+
+DROP TRIGGER IF EXISTS validate_new_workshop_booking_enough_spots_trigger; GO
+CREATE TRIGGER validate_new_workshop_booking_enough_spots_trigger
+ON workshop_bookings
+AFTER INSERT
+AS
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM inserted inserted_workshop_bookings
+    WHERE dbo.available_workshop_spots (inserted_workshop_bookings.workshop_id) < 0
+  )
+  BEGIN
+    THROW 51000, 'Not enough spots available for the workshop.', 1;
+  END
+END;
+GO
