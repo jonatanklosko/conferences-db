@@ -12,6 +12,29 @@ BEGIN TRY
   VALUES (@name, @city, @street, @postal_code, @building_number, @student_discount);
 END TRY
 BEGIN CATCH
-  DECLARE @error NVARCHAR(2048) = 'Failed to add the conference. Got error: ' + ERROR_MESSAGE();
+  DECLARE @error NVARCHAR(2048) = 'Failed to add the conference. Got an error: ' + ERROR_MESSAGE();
+  THROW 51000, @error, 1;
+END CATCH;
+
+DROP PROCEDURE IF EXISTS add_conference_day;
+CREATE PROCEDURE add_conference_day
+  @conference_id INT,
+  @date DATE,
+  @attendee_limit INT
+AS
+BEGIN TRY
+  IF NOT EXISTS (SELECT 1 FROM conferences WHERE id = @conference_id)
+  BEGIN
+    THROW 51000, 'Conference with the given id does not exist.', 1;
+  END
+  IF EXISTS (SELECT 1 FROM conference_days WHERE conference_id = @conference_id AND date = @date)
+  BEGIN
+    THROW 51000, 'Conference day for the given date already exists.', 1;
+  END
+  INSERT INTO conference_days (conference_id, date, attendee_limit)
+  VALUES (@conference_id, @date, @attendee_limit);
+END TRY
+BEGIN CATCH
+  DECLARE @error NVARCHAR(2048) = 'Failed to add the conference day. Got an error: ' + ERROR_MESSAGE();
   THROW 51000, @error, 1;
 END CATCH;
