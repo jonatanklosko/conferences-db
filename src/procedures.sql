@@ -265,3 +265,29 @@ BEGIN CATCH
   THROW 51000, @error, 1;
 END CATCH;
 GO
+
+DROP PROCEDURE IF EXISTS add_attendee;
+CREATE PROCEDURE add_attendee
+  -- Person data
+  @first_name VARCHAR(50),
+  @last_name VARCHAR(50),
+  @email VARCHAR(50)
+AS
+BEGIN TRY
+  BEGIN TRANSACTION;
+  DECLARE @person_id INT;
+  EXECUTE ensure_person @first_name, @last_name, @email, @person_id OUTPUT;
+  IF EXISTS (SELECT 1 FROM attendees WHERE person_id = @person_id)
+  BEGIN
+    THROW 51000, 'Attendee with the given person data already exists.', 1;
+  END
+  INSERT INTO attendees (person_id)
+  VALUES (@person_id);
+  COMMIT TRANSACTION;
+END TRY
+BEGIN CATCH
+  ROLLBACK TRANSACTION;
+  DECLARE @error NVARCHAR(2048) = 'Failed to add attendee. Got an error: ' + ERROR_MESSAGE();
+  THROW 51000, @error, 1;
+END CATCH;
+GO
