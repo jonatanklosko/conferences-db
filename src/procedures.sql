@@ -15,6 +15,7 @@ BEGIN CATCH
   DECLARE @error NVARCHAR(2048) = 'Failed to add the conference. Got an error: ' + ERROR_MESSAGE();
   THROW 51000, @error, 1;
 END CATCH;
+GO
 
 DROP PROCEDURE IF EXISTS add_conference_day;
 CREATE PROCEDURE add_conference_day
@@ -38,6 +39,7 @@ BEGIN CATCH
   DECLARE @error NVARCHAR(2048) = 'Failed to add the conference day. Got an error: ' + ERROR_MESSAGE();
   THROW 51000, @error, 1;
 END CATCH;
+GO
 
 DROP PROCEDURE IF EXISTS add_workshop;
 CREATE PROCEDURE add_workshop
@@ -62,6 +64,7 @@ BEGIN CATCH
   DECLARE @error NVARCHAR(2048) = 'Failed to add the workshop. Got an error: ' + ERROR_MESSAGE();
   THROW 51000, @error, 1;
 END CATCH;
+GO
 
 DROP PROCEDURE IF EXISTS add_conference_price;
 CREATE PROCEDURE add_conference_price
@@ -85,6 +88,7 @@ BEGIN CATCH
   DECLARE @error NVARCHAR(2048) = 'Failed to add the conference price. Got an error: ' + ERROR_MESSAGE();
   THROW 51000, @error, 1;
 END CATCH;
+GO
 
 DROP PROCEDURE IF EXISTS add_company_client;
 CREATE PROCEDURE add_company_client
@@ -111,3 +115,66 @@ BEGIN CATCH
   DECLARE @error NVARCHAR(2048) = 'Failed to add the client. Got an error: ' + ERROR_MESSAGE();
   THROW 51000, @error, 1;
 END CATCH;
+GO
+
+DROP PROCEDURE IF EXISTS add_individual_client;
+CREATE PROCEDURE add_individual_client
+  -- Client data
+  @city VARCHAR(50),
+  @street VARCHAR(50),
+  @postal_code VARCHAR(10),
+  @building_number VARCHAR(10),
+  -- Individual client specific data
+  @phone VARCHAR(15),
+  @student_card_id VARCHAR(20),
+  -- Person data
+  @first_name VARCHAR(50),
+  @last_name VARCHAR(50),
+  @email VARCHAR(50)
+AS
+BEGIN TRY
+  BEGIN TRANSACTION;
+  DECLARE @person_id INT;
+  EXECUTE ensure_person @first_name, @last_name, @email, @person_id OUTPUT;
+  IF EXISTS (SELECT 1 FROM individual_clients WHERE person_id = @person_id)
+  BEGIN
+    THROW 51000, 'Individual client with the given person data already exists.', 1;
+  END
+  INSERT INTO clients (city, street, postal_code, building_number)
+  VALUES (@city, @street, @postal_code, @building_number);
+  DECLARE @client_id INT = SCOPE_IDENTITY();
+  INSERT INTO individual_clients (client_id, person_id, phone, student_card_id)
+  VALUES (@client_id, @person_id, @phone, @student_card_id);
+  COMMIT TRANSACTION;
+END TRY
+BEGIN CATCH
+  ROLLBACK TRANSACTION;
+  DECLARE @error NVARCHAR(2048) = 'Failed to add the client. Got an error: ' + ERROR_MESSAGE();
+  THROW 51000, @error, 1;
+END CATCH;
+GO
+
+DROP PROCEDURE IF EXISTS ensure_person;
+CREATE PROCEDURE ensure_person
+  @first_name VARCHAR(50),
+  @last_name VARCHAR(50),
+  @email VARCHAR(50),
+  @person_id INT OUTPUT
+AS
+BEGIN TRY
+  SET @person_id = (
+    SELECT id FROM people
+    WHERE first_name = @first_name AND last_name = @last_name AND email = @email
+  );
+  IF @person_id IS NULL
+  BEGIN
+    INSERT INTO people (first_name, last_name, email)
+    VALUES (@first_name, @last_name, @email);
+    SET @person_id = SCOPE_IDENTITY();
+  END
+END TRY
+BEGIN CATCH
+  DECLARE @error NVARCHAR(2048) = 'Failed to add the person. Got an error: ' + ERROR_MESSAGE();
+  THROW 51000, @error, 1;
+END CATCH;
+GO
