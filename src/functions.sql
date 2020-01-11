@@ -156,3 +156,33 @@ BEGIN
   )
 END;
 GO
+
+DROP FUNCTION IF EXISTS conference_start_date; GO
+CREATE FUNCTION conference_start_date(
+  @conference_id INT
+)
+RETURNS DATE
+AS
+BEGIN
+  RETURN (
+    SELECT MIN(date)
+    FROM conference_days
+    WHERE conference_id = @conference_id
+  )
+END;
+GO
+
+DROP FUNCTION IF EXISTS conference_end_date; GO
+CREATE FUNCTION conference_end_date(
+  @conference_id INT
+)
+RETURNS DATE
+AS
+BEGIN
+  RETURN (
+    SELECT MAX(date)
+    FROM conference_days
+    WHERE conference_id = @conference_id
+  )
+END;
+GO

@@ -78,3 +78,30 @@ SELECT
   (full_days_cost + full_workshops_cost) * (1 - discount) - paid_amount AS to_pay
 FROM booking_costs;
 GO
+
+CREATE VIEW missing_attendees_view
+AS
+SELECT
+  bookings.conference_id conference_id,
+  companies.name company_name,
+  companies.phone company_phone
+FROM bookings
+JOIN companies ON companies.client_id = bookings.client_id
+WHERE cancelled_at IS NULL
+  AND DATEDIFF(DAY, GETDATE(), dbo.conference_start_date(bookings.conference_id)) < 14
+  AND bookings.id IN (
+    -- Missing attendees for a booked conference day
+    SELECT DISTINCT booking_id
+    FROM day_bookings
+    LEFT JOIN day_enrollments ON day_bookings.id = day_enrollments.day_booking_id
+    GROUP BY day_bookings.id, day_bookings.booking_id, day_bookings.attendee_count
+    HAVING day_bookings.attendee_count > COUNT(day_enrollments.id)
+    UNION
+    -- Missing attendees for a booked workshop
+    SELECT DISTINCT booking_id
+    FROM workshop_bookings
+    JOIN day_bookings ON workshop_bookings.day_booking_id = day_bookings.id
+    LEFT JOIN workshop_enrollments ON workshop_bookings.id = workshop_enrollments.workshop_booking_id
+    GROUP BY workshop_bookings.id, day_bookings.booking_id, workshop_bookings.attendee_count
+    HAVING workshop_bookings.attendee_count > COUNT(workshop_enrollments.id)
+  );
