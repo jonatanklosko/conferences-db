@@ -178,3 +178,26 @@ BEGIN CATCH
   THROW 51000, @error, 1;
 END CATCH;
 GO
+
+DROP PROCEDURE IF EXISTS add_booking;
+CREATE PROCEDURE add_booking
+  @client_id INT,
+  @conference_id INT
+AS
+BEGIN TRY
+  IF NOT EXISTS (SELECT 1 FROM clients WHERE id = @client_id)
+  BEGIN
+    THROW 51000, 'Client with the given id does not exist.', 1;
+  END
+  IF NOT EXISTS (SELECT 1 FROM conferences WHERE id = @conference_id)
+  BEGIN
+    THROW 51000, 'Conference with the given id does not exist.', 1;
+  END
+  INSERT INTO bookings(client_id, conference_id, created_at)
+  VALUES (@client_id, @conference_id, GETDATE());
+END TRY
+BEGIN CATCH
+  DECLARE @error NVARCHAR(2048) = 'Failed to add the booking. Got an error: ' + ERROR_MESSAGE();
+  THROW 51000, @error, 1;
+END CATCH;
+GO
