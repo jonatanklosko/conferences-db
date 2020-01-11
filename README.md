@@ -11,3 +11,4 @@ Files ordered in the way they should be executed:
 - `src/functions.sql`
 - `src/views.sql`
 - `src/procedures.sql`
+- `src/triggers.sql`
