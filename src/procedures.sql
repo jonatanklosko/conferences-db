@@ -38,3 +38,27 @@ BEGIN CATCH
   DECLARE @error NVARCHAR(2048) = 'Failed to add the conference day. Got an error: ' + ERROR_MESSAGE();
   THROW 51000, @error, 1;
 END CATCH;
+
+DROP PROCEDURE IF EXISTS add_workshop;
+CREATE PROCEDURE add_workshop
+  @conference_day_id INT,
+  @name VARCHAR(50),
+  @description VARCHAR(1000),
+  @start_time TIME,
+  @end_time TIME,
+  @room VARCHAR(30),
+  @price MONEY,
+  @attendee_limit INT
+AS
+BEGIN TRY
+  IF NOT EXISTS (SELECT 1 FROM conference_days WHERE id = @conference_day_id)
+  BEGIN
+    THROW 51000, 'Conference day with the given id does not exist.', 1;
+  END
+  INSERT INTO workshops (conference_day_id, name, description, start_time, end_time, room, price, attendee_limit)
+  VALUES (@conference_day_id, @name, @description, @start_time, @end_time, @room, @price, @attendee_limit);
+END TRY
+BEGIN CATCH
+  DECLARE @error NVARCHAR(2048) = 'Failed to add the workshop. Got an error: ' + ERROR_MESSAGE();
+  THROW 51000, @error, 1;
+END CATCH;
