@@ -357,3 +357,21 @@ BEGIN CATCH
   THROW 51000, @error, 1;
 END CATCH;
 GO
+
+CREATE PROCEDURE add_booking_payment
+  @booking_id INT,
+  @value MONEY
+AS
+BEGIN TRY
+  IF NOT EXISTS (SELECT 1 FROM bookings WHERE id = @booking_id)
+  BEGIN
+    THROW 51000, 'Booking with the given id does not exist.', 1;
+  END
+  INSERT INTO booking_payments(booking_id, value, date)
+  VALUES (@booking_id, @value, GETDATE());
+END TRY
+BEGIN CATCH
+  DECLARE @error NVARCHAR(2048) = 'Failed to add payment for the given booking. Got an error: ' + ERROR_MESSAGE();
+  THROW 51000, @error, 1;
+END CATCH;
+GO
