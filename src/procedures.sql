@@ -201,3 +201,67 @@ BEGIN CATCH
   THROW 51000, @error, 1;
 END CATCH;
 GO
+
+DROP PROCEDURE IF EXISTS add_day_booking;
+CREATE PROCEDURE add_day_booking
+  @booking_id INT,
+  @conference_day_id INT,
+  @attendee_count INT
+AS
+BEGIN TRY
+  IF NOT EXISTS (SELECT 1 FROM bookings WHERE id = @booking_id)
+  BEGIN
+    THROW 51000, 'Booking with the given id does not exist.', 1;
+  END
+  IF NOT EXISTS (SELECT 1 FROM conference_days WHERE id = @conference_day_id)
+  BEGIN
+    THROW 51000, 'Conference day with the given id does not exist.', 1;
+  END
+  IF EXISTS (SELECT 1 FROM day_bookings WHERE booking_id = @booking_id AND conference_day_id = @conference_day_id)
+  BEGIN
+    THROW 51000, 'The given conference day is already booked.', 1;
+  END
+  IF (dbo.available_conference_day_spots(@conference_day_id) = 0)
+  BEGIN
+    THROW 51000, 'There are no more free spots for the given conference day.', 1;
+  END
+  INSERT INTO day_bookings(booking_id, conference_day_id, attendee_count)
+  VALUES (@booking_id, @conference_day_id, @attendee_count);
+END TRY
+BEGIN CATCH
+  DECLARE @error NVARCHAR(2048) = 'Failed to add booking for the conference day. Got an error: ' + ERROR_MESSAGE();
+  THROW 51000, @error, 1;
+END CATCH;
+GO
+
+DROP PROCEDURE IF EXISTS add_workshop_booking;
+CREATE PROCEDURE add_workshop_booking
+  @day_booking_id INT,
+  @workshop_id INT,
+  @attendee_count INT
+AS
+BEGIN TRY
+  IF NOT EXISTS (SELECT 1 FROM day_bookings WHERE id = @day_booking_id)
+  BEGIN
+    THROW 51000, 'Day booking with the given id does not exist.', 1;
+  END
+  IF NOT EXISTS (SELECT 1 FROM workshops WHERE id = @workshop_id)
+  BEGIN
+    THROW 51000, 'Workshop with the given id does not exist.', 1;
+  END
+  IF EXISTS (SELECT 1 FROM workshop_bookings WHERE workshop_id = @workshop_id AND day_booking_id = @day_booking_id)
+  BEGIN
+    THROW 51000, 'The given workshop is already booked.', 1;
+  END
+  IF (dbo.available_workshop_spots(@workshop_id) = 0)
+  BEGIN
+    THROW 51000, 'There are no more free spots for the given workshop.', 1;
+  END
+  INSERT INTO workshop_bookings(day_booking_id, workshop_id, attendee_count)
+  VALUES (@day_booking_id, @workshop_id, @attendee_count);
+END TRY
+BEGIN CATCH
+  DECLARE @error NVARCHAR(2048) = 'Failed to add booking for the workshop. Got an error: ' + ERROR_MESSAGE();
+  THROW 51000, @error, 1;
+END CATCH;
+GO
