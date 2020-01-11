@@ -8,5 +8,6 @@ Files ordered in the way they should be executed:
 
 - `src/schema.sql` - the database schema
 - `src/indices.sql` - additional indices boosting query performance
-- `src/functions.sql` - custom functions, used by views in particular
-- `src/views.sql` - custom views
+- `src/functions.sql`
+- `src/views.sql`
+- `src/procedures.sql`
