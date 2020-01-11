@@ -44,3 +44,14 @@ JOIN conference_days ON conference_days.conference_id = conferences.id
 WHERE conference_days.date >= GETDATE()
 GROUP BY conferences.id, conferences.name;
 GO
+
+DROP VIEW IF EXISTS monthly_incomes_view; GO
+CREATE VIEW monthly_incomes_view
+AS
+SELECT
+  YEAR(date) year,
+  MONTH(date) month,
+  SUM(value) income
+FROM booking_payments
+GROUP BY YEAR(date), MONTH(date);
+GO
