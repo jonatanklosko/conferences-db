@@ -85,3 +85,29 @@ BEGIN CATCH
   DECLARE @error NVARCHAR(2048) = 'Failed to add the conference price. Got an error: ' + ERROR_MESSAGE();
   THROW 51000, @error, 1;
 END CATCH;
+
+DROP PROCEDURE IF EXISTS add_company_client;
+CREATE PROCEDURE add_company_client
+  -- Client data
+  @city VARCHAR(50),
+  @street VARCHAR(50),
+  @postal_code VARCHAR(10),
+  @building_number VARCHAR(10),
+  -- Company specific data
+  @name VARCHAR(50),
+  @phone VARCHAR(15)
+AS
+BEGIN TRY
+  BEGIN TRANSACTION;
+  INSERT INTO clients (city, street, postal_code, building_number)
+  VALUES (@city, @street, @postal_code, @building_number);
+  DECLARE @client_id INT = SCOPE_IDENTITY();
+  INSERT INTO companies (client_id, name, phone)
+  VALUES (@client_id, @name, @phone);
+  COMMIT TRANSACTION;
+END TRY
+BEGIN CATCH
+  ROLLBACK TRANSACTION;
+  DECLARE @error NVARCHAR(2048) = 'Failed to add the client. Got an error: ' + ERROR_MESSAGE();
+  THROW 51000, @error, 1;
+END CATCH;
