@@ -55,3 +55,26 @@ SELECT
 FROM booking_payments
 GROUP BY YEAR(date), MONTH(date);
 GO
+
+DROP VIEW IF EXISTS booking_costs_view; GO
+CREATE VIEW booking_costs_view
+AS
+WITH booking_costs AS (
+  SELECT
+    id,
+    dbo.booking_full_days_cost(id) full_days_cost,
+    dbo.booking_full_workshops_cost(id) full_workshops_cost,
+    dbo.booking_discount(id) discount,
+    dbo.booking_paid_amount(id) paid_amount
+  FROM bookings
+)
+SELECT
+  id,
+  full_days_cost,
+  full_workshops_cost,
+  discount,
+  (full_days_cost + full_workshops_cost) * (1 - discount) AS total_cost,
+  paid_amount,
+  (full_days_cost + full_workshops_cost) * (1 - discount) - paid_amount AS to_pay
+FROM booking_costs;
+GO

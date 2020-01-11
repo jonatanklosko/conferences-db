@@ -493,6 +493,33 @@ FROM booking_payments
 GROUP BY YEAR(date), MONTH(date);
 ```
 
+### `booking_costs_view`
+
+Widok zawiera podsumowanie kosztów każdego z zamówień, w szczególności kwotę pozostałą do opłacenia.
+
+```sql
+CREATE VIEW booking_costs_view
+AS
+WITH booking_costs AS (
+  SELECT
+    id,
+    dbo.booking_full_days_cost(id) full_days_cost,
+    dbo.booking_full_workshops_cost(id) full_workshops_cost,
+    dbo.booking_discount(id) discount,
+    dbo.booking_paid_amount(id) paid_amount
+  FROM bookings
+)
+SELECT
+  id,
+  full_days_cost,
+  full_workshops_cost,
+  discount,
+  (full_days_cost + full_workshops_cost) * (1 - discount) AS total_cost,
+  paid_amount,
+  (full_days_cost + full_workshops_cost) * (1 - discount) - paid_amount AS to_pay
+FROM booking_costs;
+```
+
 ## Funkcje
 
 ### `day_price_on`
@@ -604,6 +631,91 @@ RETURN (
   WHERE workshop_bookings.workshop_id = @workshop_id
     AND workshop_bookings.cancelled_at IS NULL
 );
+```
+
+### `booking_full_days_cost`
+
+Funkcja zwracająca całkowitą kwotę za same dni konferencji dla wskazanego zamówienia.
+
+```sql
+CREATE FUNCTION booking_full_days_cost(
+  @booking_id INT
+)
+RETURNS INT
+AS
+BEGIN
+  RETURN (
+    SELECT
+      SUM(dbo.day_price_on(bookings.conference_id, bookings.created_at) * day_bookings.attendee_count)
+    FROM day_bookings
+    JOIN bookings ON bookings.id = day_bookings.booking_id
+    WHERE booking_id = @booking_id
+  )
+END;
+```
+
+### `booking_full_workshops_cost`
+
+Funkcja zwracająca całkowitą kwotę za warsztaty dla wskazanego zamówienia.
+
+```sql
+CREATE FUNCTION booking_full_workshops_cost(
+  @booking_id INT
+)
+RETURNS INT
+AS
+BEGIN
+  RETURN (
+    SELECT
+      SUM(workshops.price * workshop_bookings.attendee_count)
+    FROM workshop_bookings
+    JOIN day_bookings ON day_bookings.id = workshop_bookings.day_booking_id
+    JOIN workshops ON workshops.id = workshop_bookings.workshop_id
+    WHERE day_bookings.booking_id = @booking_id
+  )
+END;
+```
+
+### `booking_paid_amount`
+
+Funkcja zwracająca całkowitą sumę płatności dokonanych w ramach wskazanego zamówienia.
+
+```sql
+CREATE FUNCTION booking_paid_amount(
+  @booking_id INT
+)
+RETURNS INT
+AS
+BEGIN
+  RETURN (
+    SELECT SUM(value)
+    FROM booking_payments
+    WHERE booking_id = @booking_id
+  )
+END;
+```
+
+### `booking_discount`
+
+Funkcja zwracająca zniżkę przysługującą wskazanemu zamówieniu
+(w przypadku klienta indywidualnego będącego studentem jest to zniżka studencka).
+
+```sql
+CREATE FUNCTION booking_discount(
+  @booking_id INT
+)
+RETURNS INT
+AS
+BEGIN
+  RETURN (
+    SELECT IIF(individual_clients.student_card_id IS NOT NULL, conferences.student_discount, 0)
+    FROM bookings
+    JOIN conferences ON conferences.id = bookings.conference_id
+    JOIN clients ON clients.id = bookings.client_id
+    LEFT JOIN individual_clients ON clients.id = individual_clients.client_id
+    WHERE bookings.id = @booking_id
+  )
+END;
 ```
 
 ## Procedury

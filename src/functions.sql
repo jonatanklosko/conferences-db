@@ -88,3 +88,71 @@ RETURN (
     AND workshop_bookings.cancelled_at IS NULL
 );
 GO
+
+DROP FUNCTION IF EXISTS booking_full_days_cost; GO
+CREATE FUNCTION booking_full_days_cost(
+  @booking_id INT
+)
+RETURNS INT
+AS
+BEGIN
+  RETURN (
+    SELECT
+      SUM(dbo.day_price_on(bookings.conference_id, bookings.created_at) * day_bookings.attendee_count)
+    FROM day_bookings
+    JOIN bookings ON bookings.id = day_bookings.booking_id
+    WHERE booking_id = @booking_id
+  )
+END;
+GO
+
+DROP FUNCTION IF EXISTS booking_full_workshops_cost; GO
+CREATE FUNCTION booking_full_workshops_cost(
+  @booking_id INT
+)
+RETURNS INT
+AS
+BEGIN
+  RETURN (
+    SELECT
+      SUM(workshops.price * workshop_bookings.attendee_count)
+    FROM workshop_bookings
+    JOIN day_bookings ON day_bookings.id = workshop_bookings.day_booking_id
+    JOIN workshops ON workshops.id = workshop_bookings.workshop_id
+    WHERE day_bookings.booking_id = @booking_id
+  )
+END;
+GO
+
+DROP FUNCTION IF EXISTS booking_paid_amount; GO
+CREATE FUNCTION booking_paid_amount(
+  @booking_id INT
+)
+RETURNS INT
+AS
+BEGIN
+  RETURN (
+    SELECT SUM(value)
+    FROM booking_payments
+    WHERE booking_id = @booking_id
+  )
+END;
+GO
+
+DROP FUNCTION IF EXISTS booking_discount; GO
+CREATE FUNCTION booking_discount(
+  @booking_id INT
+)
+RETURNS INT
+AS
+BEGIN
+  RETURN (
+    SELECT IIF(individual_clients.student_card_id IS NOT NULL, conferences.student_discount, 0)
+    FROM bookings
+    JOIN conferences ON conferences.id = bookings.conference_id
+    JOIN clients ON clients.id = bookings.client_id
+    LEFT JOIN individual_clients ON clients.id = individual_clients.client_id
+    WHERE bookings.id = @booking_id
+  )
+END;
+GO
