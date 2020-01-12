@@ -187,3 +187,41 @@ BEGIN
   END
 END;
 GO
+
+DROP TRIGGER IF EXISTS validate_day_booking_within_proper_conference; GO
+CREATE TRIGGER validate_day_booking_within_proper_conference
+ON day_bookings
+AFTER INSERT, UPDATE
+AS
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM inserted inserted_day_bookings
+    JOIN bookings ON bookings.id = inserted_day_bookings.booking_id
+    JOIN conference_days ON conference_days.id = inserted_day_bookings.conference_day_id
+    WHERE conference_days.conference_id != bookings.conference_id
+  )
+  BEGIN
+    THROW 51000, 'Cannot book a day in a different conference than the booking one.', 1;
+  END
+END;
+GO
+
+DROP TRIGGER IF EXISTS validate_workshop_booking_within_proper_day_booking; GO
+CREATE TRIGGER validate_workshop_booking_within_proper_day_booking
+ON workshop_bookings
+AFTER INSERT, UPDATE
+AS
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM inserted inserted_workshop_bookings
+    JOIN workshops ON workshops.id = inserted_workshop_bookings.workshop_id
+    JOIN day_bookings ON day_bookings.id = inserted_workshop_bookings.day_booking_id
+    WHERE day_bookings.conference_day_id != workshops.conference_day_id
+  )
+  BEGIN
+    THROW 51000, 'Cannot book a workshop on a different day than the day booking.', 1;
+  END
+END;
+GO
