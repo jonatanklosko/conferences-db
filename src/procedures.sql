@@ -414,3 +414,16 @@ BEGIN CATCH
   THROW 51000, @error, 1;
 END CATCH
 GO
+
+DROP PROCEDURE IF EXISTS cancel_bookings_with_no_payments_on_time;
+GO
+CREATE PROCEDURE cancel_bookings_with_no_payments_on_time
+AS
+BEGIN
+  UPDATE bookings
+  SET cancelled_at = GETDATE()
+  FROM bookings
+  WHERE DATEDIFF(DAY, bookings.created_at, GETDATE()) > 7
+    AND dbo.booking_paid_amount(bookings.id) = 0;
+END
+GO

@@ -159,7 +159,7 @@ RETURNS INT
 AS
 BEGIN
   RETURN (
-    SELECT SUM(value)
+    SELECT ISNULL(SUM(value), 0)
     FROM booking_payments
     WHERE booking_id = @booking_id
   )

@@ -744,7 +744,7 @@ RETURNS INT
 AS
 BEGIN
   RETURN (
-    SELECT SUM(value)
+    SELECT ISNULL(SUM(value), 0)
     FROM booking_payments
     WHERE booking_id = @booking_id
   )
@@ -1379,6 +1379,25 @@ BEGIN CATCH
   DECLARE @error NVARCHAR(2048) = 'Failed to workshop interest. Got an error: ' + ERROR_MESSAGE();
   THROW 51000, @error, 1;
 END CATCH
+```
+
+### `cancel_bookings_with_no_payments_on_time`
+
+Procedura służąca do anulowania rezerwacji bez wpłat w ciągu 7 dni od jej złożenia.
+W przypadku opłacenia częściowego nie dokonujemy automatycznej anulacji,
+ponieważ takie przypadki powinny być rozpatrywane indywidualnie.
+
+```sql
+GO
+CREATE PROCEDURE cancel_bookings_with_no_payments_on_time
+AS
+BEGIN
+  UPDATE bookings
+  SET cancelled_at = GETDATE()
+  FROM bookings
+  WHERE DATEDIFF(DAY, bookings.created_at, GETDATE()) > 7
+    AND dbo.booking_paid_amount(bookings.id) = 0;
+END
 ```
 
 ## Triggery
