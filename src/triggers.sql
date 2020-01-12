@@ -1,3 +1,21 @@
+DROP TRIGGER IF EXISTS validate_workshop_attendee_limit_not_over_day_limit; GO
+CREATE TRIGGER validate_workshop_attendee_limit_not_over_day_limit
+ON workshops
+AFTER INSERT, UPDATE
+AS
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM inserted inserted_workshops
+    JOIN conference_days ON conference_days.id = inserted_workshops.conference_day_id
+    WHERE conference_days.attendee_limit > inserted_workshops.attendee_limit
+  )
+  BEGIN
+    THROW 51000, 'Workshop cannot have lower attendee limit than its conference day.', 1;
+  END
+END;
+GO
+
 DROP TRIGGER IF EXISTS propagate_booking_cancellation_trigger; GO
 CREATE TRIGGER propagate_booking_cancellation_trigger
 ON bookings
