@@ -8,10 +8,28 @@ BEGIN
     SELECT 1
     FROM inserted inserted_workshops
     JOIN conference_days ON conference_days.id = inserted_workshops.conference_day_id
-    WHERE conference_days.attendee_limit > inserted_workshops.attendee_limit
+    WHERE conference_days.attendee_limit < inserted_workshops.attendee_limit
   )
   BEGIN
-    THROW 51000, 'Workshop cannot have lower attendee limit than its conference day.', 1;
+    THROW 51000, 'Workshop cannot have greater attendee limit than its conference day.', 1;
+  END
+END;
+GO
+
+DROP TRIGGER IF EXISTS validate_conference_day_attendee_limit_not_under_workshop_limit; GO
+CREATE TRIGGER validate_conference_day_attendee_limit_not_under_workshop_limit
+ON conference_days
+AFTER UPDATE
+AS
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM inserted inserted_conference_days
+    JOIN workshops ON workshops.conference_day_id = inserted_conference_days.id
+    WHERE inserted_conference_days.attendee_limit < workshops.attendee_limit
+  )
+  BEGIN
+    THROW 51000, 'Conference day cannot have lower attendee limit than its workshops.', 1;
   END
 END;
 GO
