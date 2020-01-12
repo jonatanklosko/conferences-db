@@ -1,10 +1,96 @@
-## Projekt
+# Dokumentacja projektu
 
-### Diagram ER
+Niniejszy dokument stanowi dokumentację projektu oraz implementacji systemu
+bazodanowego służącego do zarządzania konferencjami.
+Podstawowe założenia projektowe można znaleźć w [osobnym dokumencie](./requirements.pdf).
+
+Autorzy: Jonatan Kłosko, Marcin Zięba
+
+## Spis treści
+
+1. [Diagram ER](#diagram-er)
+2. [Schemat](#Schemat)
+3. [Tabele](#tabele)
+    - [`conferences`](#conferences)
+    - [`conference_days`](#conference_days)
+    - [`workshops`](#workshops)
+    - [`conference_prices`](#conference_prices)
+    - [`clients`](#clients)
+    - [`companies`](#companies)
+    - [`people`](#people)
+    - [`individual_clients`](#individual_clients)
+    - [`bookings`](#bookings)
+    - [`day_bookings`](#day_bookings)
+    - [`workshop_bookings`](#workshop_bookings)
+    - [`attendees`](#attendees)
+    - [`day_enrollments`](#day_enrollments)
+    - [`workshop_enrollments`](#workshop_enrollments)
+    - [`booking_payments`](#booking_payments)
+    - [`workshop_interests`](#workshop_interests)
+4. [Widoki](#widoki)
+    - [`badges_view`](#badges_view)
+    - [`client_statistics_view`](#client_statistics_view)
+    - [`upcoming_conferences_summary_view`](#upcoming_conferences_summary_view)
+    - [`monthly_incomes_view`](#monthly_incomes_view)
+    - [`booking_costs_view`](#booking_costs_view)
+    - [`missing_attendees_view`](#missing_attendees_view)
+5. [Funkcje](#funkcje)
+    - [`day_price_on`](#day_price_on)
+    - [`available_conference_day_spots`](#available_conference_day_spots)
+    - [`available_workshop_spots`](#available_workshop_spots)
+    - [`conference_day_attendees`](#conference_day_attendees)
+    - [`workshop_attendees`](#workshop_attendees)
+    - [`attendee_workshops`](#attendee_workshops)
+    - [`booking_full_days_cost`](#booking_full_days_cost)
+    - [`booking_full_workshops_cost`](#booking_full_workshops_cost)
+    - [`booking_paid_amount`](#booking_paid_amount)
+    - [`booking_discount`](#booking_discount)
+    - [`conference_start_date`](#conference_start_date)
+    - [`conference_end_date`](#conference_end_date)
+    - [`available_booked_day_spots`](#available_booked_day_spots)
+    - [`available_booked_workshop_spots`](#available_booked_workshop_spots)
+    - [`workshop_start_date`](#workshop_start_date)
+    - [`workshop_end_date`](#workshop_end_date)
+    - [`workshops_overlap`](#workshops_overlap)
+6. [Procedury](#procedury)
+    - [`add_conference`](#add_conference)
+    - [`add_conference_day`](#add_conference_day)
+    - [`add_workshop`](#add_workshop)
+    - [`add_conference_price`](#add_conference_price)
+    - [`add_company_client`](#add_company_client)
+    - [`ensure_person`](#ensure_person)
+    - [`add_individual_client`](#add_individual_client)
+    - [`add_booking`](#add_booking)
+    - [`add_day_booking`](#add_day_booking)
+    - [`add_workshop_booking`](#add_workshop_booking)
+    - [`add_attendee`](#add_attendee)
+    - [`add_day_enrollment`](#add_day_enrollment)
+    - [`add_workshop_enrollment`](#add_workshop_enrollment)
+    - [`add_booking_payment`](#add_booking_payment)
+    - [`add_workshop_interest`](#add_workshop_interest)
+    - [`cancel_bookings_with_no_payments_on_time`](#cancel_bookings_with_no_payments_on_time)
+7. [Triggery](#triggery)
+    - [`validate_workshop_attendee_limit_not_over_day_limit`](#validate_workshop_attendee_limit_not_over_day_limit)
+    - [`validate_conference_day_attendee_limit_not_under_workshop_limit`](#validate_conference_day_attendee_limit_not_under_workshop_limit)
+    - [`propagate_booking_cancellation`](#propagate_booking_cancellation)
+    - [`propagate_day_booking_cancellation`](#propagate_day_booking_cancellation)
+    - [`validate_new_day_booking_has_noncancelled_booking`](#validate_new_day_booking_has_noncancelled_booking)
+    - [`validate_new_workshop_booking_has_noncancelled_day_booking`](#validate_new_workshop_booking_has_noncancelled_day_booking)
+    - [`validate_new_booking_payment_has_noncancelled_booking`](#validate_new_booking_payment_has_noncancelled_booking)
+    - [`validate_new_day_booking_attendee_count_not_over_limit`](#validate_new_day_booking_attendee_count_not_over_limit)
+    - [`validate_new_workshop_booking_attendee_count_not_over_limit`](#validate_new_workshop_booking_attendee_count_not_over_limit)
+    - [`validate_new_day_enrollment_within_booked_limit`](#validate_new_day_enrollment_within_booked_limit)
+    - [`validate_new_workshop_enrollment_within_booked_limit`](#validate_new_workshop_enrollment_within_booked_limit)
+    - [`validate_day_booking_within_proper_conference`](#validate_day_booking_within_proper_conference)
+    - [`validate_workshop_booking_within_proper_day_booking`](#validate_workshop_booking_within_proper_day_booking)
+    - [`validate_booking_date_before_conference_start`](#validate_booking_date_before_conference_start)
+    - [`validate_attendee_workshops_do_not_overlap`](#validate_attendee_workshops_do_not_overlap)
+
+## Diagram ER
 
 ![Diagram ER](./img/er_diagram.svg)
 
-### Schemat
+## Schemat
 
 ![Schemat](./img/schema.svg)
 
