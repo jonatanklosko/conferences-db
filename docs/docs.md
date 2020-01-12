@@ -85,6 +85,7 @@ Autorzy: Jonatan Kłosko, Marcin Zięba
     - [`validate_workshop_booking_within_proper_day_booking`](#validate_workshop_booking_within_proper_day_booking)
     - [`validate_booking_date_before_conference_start`](#validate_booking_date_before_conference_start)
     - [`validate_attendee_workshops_do_not_overlap`](#validate_attendee_workshops_do_not_overlap)
+8. [Indeksy](#indeksy)
 
 ## Diagram ER
 
@@ -1817,4 +1818,39 @@ BEGIN
     THROW 51000, 'Attendee cannot enroll in two overlapping workshops.', 1;
   END
 END
+```
+
+## Indeksy
+
+Zastosowano indeksy na często wykorzystywanych kluczach obcych oraz kilku zwykłych kolumnach.
+Nie tworzono indeksów dla kolumn posiadających warunek integralności `UNIQUE`,
+ponieważ dla nich indeksy są tworzone domyślnie.
+
+```sql
+-- workshops
+CREATE INDEX index_workshops_on_conference_day_id ON workshops (conference_day_id);
+
+-- bookings
+CREATE INDEX index_bookings_on_conference_id ON bookings (conference_id);
+CREATE INDEX index_bookings_on_cancelled_at ON bookings (cancelled_at);
+
+-- day_bookings
+CREATE INDEX index_day_bookings_on_booking_id ON day_bookings (booking_id);
+CREATE INDEX index_day_bookings_on_cancelled_at ON day_bookings (cancelled_at);
+
+-- workshop_bookings
+CREATE INDEX index_workshop_bookings_on_day_booking_id ON workshop_bookings (day_booking_id);
+CREATE INDEX index_workshop_bookings_on_cancelled_at ON workshop_bookings (cancelled_at);
+
+-- day_enrollments
+CREATE INDEX index_day_enrollments_on_day_booking_id ON day_enrollments (day_booking_id);
+
+-- workshop_enrollments
+CREATE INDEX index_workshop_enrollments_on_day_enrollment_id ON workshop_enrollments (day_enrollment_id);
+
+-- booking_payments
+CREATE INDEX index_booking_payments_on_booking_id ON booking_payments (booking_id);
+
+-- individual_clients
+CREATE INDEX index_individual_clients_on_client_id ON individual_clients (client_id);
 ```
