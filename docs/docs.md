@@ -669,6 +669,26 @@ RETURN (
 );
 ```
 
+### `attendee_workshops`
+
+Funkcja zwracająca listę warsztatów dla wskazanego uczestnika na wskazanej konferncji.
+
+```sql
+CREATE FUNCTION attendee_workshops(
+  @attendee_id INT,
+  @conference_id INT
+)
+RETURNS TABLE
+AS
+RETURN (
+  SELECT workshops.*
+  FROM workshops
+  JOIN conference_days ON conference_days.id = workshops.conference_day_id
+  WHERE conference_days.conference_id = @conference_id
+    AND @attendee_id IN (SELECT attendee_id FROM dbo.workshop_attendees(workshops.id))
+);
+```
+
 ### `booking_full_days_cost`
 
 Funkcja zwracająca całkowitą kwotę za same dni konferencji dla wskazanego zamówienia.
@@ -833,6 +853,66 @@ BEGIN
     WHERE workshop_bookings.id = @workshop_booking_id
     GROUP BY workshop_bookings.id, workshop_bookings.attendee_count
   )
+END;
+```
+
+### `workshop_start_date`
+
+Funkcja zwracająca pełną datę rozpoczęcia warsztatu.
+
+```sql
+CREATE FUNCTION workshop_start_date(
+  @workshop_id INT
+)
+RETURNS DATETIME
+AS
+BEGIN
+  RETURN (
+    SELECT CAST(conference_days.date AS DATETIME) + CAST(workshops.start_time AS DATETIME)
+    FROM workshops
+    JOIN conference_days ON conference_days.id = workshops.conference_day_id
+    WHERE workshops.id = @workshop_id
+  );
+END;
+```
+
+### `workshop_end_date`
+
+Funkcja zwracająca pełną datę zakończenia warsztatu.
+
+```sql
+CREATE FUNCTION workshop_end_date(
+  @workshop_id INT
+)
+RETURNS DATETIME
+AS
+BEGIN
+  RETURN (
+    SELECT CAST(conference_days.date AS DATETIME) + CAST(workshops.end_time AS DATETIME)
+    FROM workshops
+    JOIN conference_days ON conference_days.id = workshops.conference_day_id
+    WHERE workshops.id = @workshop_id
+  );
+END;
+```
+
+### `workshops_overlap`
+
+Funkcja sprawdzająca czy wskazane dwa warsztaty odbywają się w tym samym czasie (co najmniej częściowo).
+
+```sql
+CREATE FUNCTION workshops_overlap(
+  @workshop1_id INT,
+  @workshop2_id INT
+)
+RETURNS BIT
+AS
+BEGIN
+  DECLARE @workshop1_start DATETIME = dbo.workshop_start_date(@workshop1_id);
+  DECLARE @workshop1_end DATETIME = dbo.workshop_end_date(@workshop1_id);
+  DECLARE @workshop2_start DATETIME = dbo.workshop_start_date(@workshop2_id);
+  DECLARE @workshop2_end DATETIME = dbo.workshop_end_date(@workshop2_id);
+  RETURN IIF(@workshop1_start < @workshop2_end AND @workshop2_start < @workshop1_end, 1, 0);
 END;
 ```
 

@@ -238,7 +238,34 @@ BEGIN
     WHERE inserted_bookings.created_at > dbo.conference_start_date(inserted_bookings.conference_id)
   )
   BEGIN
-    THROW 51000, 'Cannot add booking after the conference start.', 1;
+    THROW 51000, 'Cannot add booking after conference start.', 1;
+  END
+END;
+GO
+
+DROP TRIGGER IF EXISTS validate_attendee_workshops_do_not_overlap; GO
+CREATE TRIGGER validate_attendee_workshops_do_not_overlap
+ON workshop_enrollments
+AFTER INSERT, UPDATE
+AS
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM inserted inserted_workshop_enrollments
+    JOIN day_enrollments de1 ON de1.id = inserted_workshop_enrollments.day_enrollment_id
+    JOIN workshop_bookings wb1 ON wb1.id = inserted_workshop_enrollments.workshop_booking_id
+    WHERE EXISTS (
+      SELECT 1
+      FROM workshop_enrollments
+      JOIN day_enrollments de2 ON de2.id = workshop_enrollments.day_enrollment_id
+      JOIN workshop_bookings wb2 ON wb2.id = workshop_enrollments.workshop_booking_id
+      WHERE de1.attendee_id = de2.attendee_id
+        AND wb1.workshop_id != wb2.workshop_id
+        AND dbo.workshops_overlap(wb1.workshop_id, wb2.workshop_id) = 1
+    )
+  )
+  BEGIN
+    THROW 51000, 'Attendee cannot enroll in two overlapping workshops.', 1;
   END
 END;
 GO
