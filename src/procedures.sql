@@ -1,4 +1,5 @@
-DROP PROCEDURE IF EXISTS add_conference; GO
+DROP PROCEDURE IF EXISTS add_conference
+GO
 CREATE PROCEDURE add_conference
   @name VARCHAR(50),
   @city VARCHAR(50),
@@ -17,7 +18,8 @@ BEGIN CATCH
 END CATCH;
 GO
 
-DROP PROCEDURE IF EXISTS add_conference_day; GO
+DROP PROCEDURE IF EXISTS add_conference_day
+GO
 CREATE PROCEDURE add_conference_day
   @conference_id INT,
   @date DATE,
@@ -41,7 +43,8 @@ BEGIN CATCH
 END CATCH;
 GO
 
-DROP PROCEDURE IF EXISTS add_workshop; GO
+DROP PROCEDURE IF EXISTS add_workshop
+GO
 CREATE PROCEDURE add_workshop
   @conference_day_id INT,
   @name VARCHAR(50),
@@ -66,7 +69,8 @@ BEGIN CATCH
 END CATCH;
 GO
 
-DROP PROCEDURE IF EXISTS add_conference_price; GO
+DROP PROCEDURE IF EXISTS add_conference_price
+GO
 CREATE PROCEDURE add_conference_price
   @conference_id INT,
   @final_date DATE,
@@ -90,7 +94,8 @@ BEGIN CATCH
 END CATCH;
 GO
 
-DROP PROCEDURE IF EXISTS add_company_client; GO
+DROP PROCEDURE IF EXISTS add_company_client
+GO
 CREATE PROCEDURE add_company_client
   -- Client data
   @city VARCHAR(50),
@@ -117,7 +122,34 @@ BEGIN CATCH
 END CATCH;
 GO
 
-DROP PROCEDURE IF EXISTS add_individual_client; GO
+DROP PROCEDURE IF EXISTS ensure_person
+GO
+CREATE PROCEDURE ensure_person
+  @first_name VARCHAR(50),
+  @last_name VARCHAR(50),
+  @email VARCHAR(50),
+  @person_id INT OUTPUT
+AS
+BEGIN TRY
+  SET @person_id = (
+    SELECT id FROM people
+    WHERE first_name = @first_name AND last_name = @last_name AND email = @email
+  );
+  IF @person_id IS NULL
+  BEGIN
+    INSERT INTO people (first_name, last_name, email)
+    VALUES (@first_name, @last_name, @email);
+    SET @person_id = SCOPE_IDENTITY();
+  END
+END TRY
+BEGIN CATCH
+  DECLARE @error NVARCHAR(2048) = 'Failed to add the person. Got an error: ' + ERROR_MESSAGE();
+  THROW 51000, @error, 1;
+END CATCH;
+GO
+
+DROP PROCEDURE IF EXISTS add_individual_client
+GO
 CREATE PROCEDURE add_individual_client
   -- Client data
   @city VARCHAR(50),
@@ -154,32 +186,8 @@ BEGIN CATCH
 END CATCH;
 GO
 
-DROP PROCEDURE IF EXISTS ensure_person; GO
-CREATE PROCEDURE ensure_person
-  @first_name VARCHAR(50),
-  @last_name VARCHAR(50),
-  @email VARCHAR(50),
-  @person_id INT OUTPUT
-AS
-BEGIN TRY
-  SET @person_id = (
-    SELECT id FROM people
-    WHERE first_name = @first_name AND last_name = @last_name AND email = @email
-  );
-  IF @person_id IS NULL
-  BEGIN
-    INSERT INTO people (first_name, last_name, email)
-    VALUES (@first_name, @last_name, @email);
-    SET @person_id = SCOPE_IDENTITY();
-  END
-END TRY
-BEGIN CATCH
-  DECLARE @error NVARCHAR(2048) = 'Failed to add the person. Got an error: ' + ERROR_MESSAGE();
-  THROW 51000, @error, 1;
-END CATCH;
+DROP PROCEDURE IF EXISTS add_booking
 GO
-
-DROP PROCEDURE IF EXISTS add_booking; GO
 CREATE PROCEDURE add_booking
   @client_id INT,
   @conference_id INT
@@ -202,7 +210,8 @@ BEGIN CATCH
 END CATCH;
 GO
 
-DROP PROCEDURE IF EXISTS add_day_booking; GO
+DROP PROCEDURE IF EXISTS add_day_booking
+GO
 CREATE PROCEDURE add_day_booking
   @booking_id INT,
   @conference_day_id INT,
@@ -234,7 +243,8 @@ BEGIN CATCH
 END CATCH;
 GO
 
-DROP PROCEDURE IF EXISTS add_workshop_booking; GO
+DROP PROCEDURE IF EXISTS add_workshop_booking
+GO
 CREATE PROCEDURE add_workshop_booking
   @day_booking_id INT,
   @workshop_id INT,
@@ -266,7 +276,8 @@ BEGIN CATCH
 END CATCH;
 GO
 
-DROP PROCEDURE IF EXISTS add_attendee; GO
+DROP PROCEDURE IF EXISTS add_attendee
+GO
 CREATE PROCEDURE add_attendee
   -- Person data
   @first_name VARCHAR(50),
@@ -292,7 +303,8 @@ BEGIN CATCH
 END CATCH;
 GO
 
-DROP PROCEDURE IF EXISTS add_day_enrollment; GO
+DROP PROCEDURE IF EXISTS add_day_enrollment
+GO
 CREATE PROCEDURE add_day_enrollment
   @day_booking_id INT,
   @attendee_id INT
@@ -319,7 +331,8 @@ BEGIN CATCH
 END CATCH;
 GO
 
-DROP PROCEDURE IF EXISTS add_workshop_enrollment; GO
+DROP PROCEDURE IF EXISTS add_workshop_enrollment
+GO
 CREATE PROCEDURE add_workshop_enrollment
   @workshop_booking_id INT,
   @attendee_id INT
@@ -358,7 +371,8 @@ BEGIN CATCH
 END CATCH;
 GO
 
-DROP PROCEDURE IF EXISTS add_booking_payment; GO
+DROP PROCEDURE IF EXISTS add_booking_payment
+GO
 CREATE PROCEDURE add_booking_payment
   @booking_id INT,
   @value MONEY
@@ -377,7 +391,8 @@ BEGIN CATCH
 END CATCH;
 GO
 
-DROP PROCEDURE IF EXISTS add_workshop_interest; GO
+DROP PROCEDURE IF EXISTS add_workshop_interest
+GO
 CREATE PROCEDURE add_workshop_interest
   @workshop_id INT,
   @booking_id INT

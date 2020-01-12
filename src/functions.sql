@@ -1,4 +1,5 @@
-DROP FUNCTION IF EXISTS day_price_on; GO
+DROP FUNCTION IF EXISTS day_price_on
+GO
 CREATE FUNCTION day_price_on(
   @conference_id INT,
   @date DATE
@@ -15,7 +16,8 @@ BEGIN
 END;
 GO
 
-DROP FUNCTION IF EXISTS available_conference_day_spots; GO
+DROP FUNCTION IF EXISTS available_conference_day_spots
+GO
 CREATE FUNCTION available_conference_day_spots(
   @conference_day_id INT
 )
@@ -34,7 +36,8 @@ BEGIN
 END;
 GO
 
-DROP FUNCTION IF EXISTS available_workshop_spots; GO
+DROP FUNCTION IF EXISTS available_workshop_spots
+GO
 CREATE FUNCTION available_workshop_spots(
   @workshop_id INT
 )
@@ -53,7 +56,8 @@ BEGIN
 END;
 GO
 
-DROP FUNCTION IF EXISTS conference_day_attendees; GO
+DROP FUNCTION IF EXISTS conference_day_attendees
+GO
 CREATE FUNCTION conference_day_attendees(
   @conference_day_id INT
 )
@@ -72,7 +76,8 @@ RETURN (
 );
 GO
 
-DROP FUNCTION IF EXISTS workshop_attendees; GO
+DROP FUNCTION IF EXISTS workshop_attendees
+GO
 CREATE FUNCTION workshop_attendees(
   @workshop_id INT
 )
@@ -91,7 +96,8 @@ RETURN (
 );
 GO
 
-DROP FUNCTION IF EXISTS attendee_workshops; GO
+DROP FUNCTION IF EXISTS attendee_workshops
+GO
 CREATE FUNCTION attendee_workshops(
   @attendee_id INT,
   @conference_id INT
@@ -107,7 +113,8 @@ RETURN (
 );
 GO
 
-DROP FUNCTION IF EXISTS booking_full_days_cost; GO
+DROP FUNCTION IF EXISTS booking_full_days_cost
+GO
 CREATE FUNCTION booking_full_days_cost(
   @booking_id INT
 )
@@ -124,7 +131,8 @@ BEGIN
 END;
 GO
 
-DROP FUNCTION IF EXISTS booking_full_workshops_cost; GO
+DROP FUNCTION IF EXISTS booking_full_workshops_cost
+GO
 CREATE FUNCTION booking_full_workshops_cost(
   @booking_id INT
 )
@@ -142,7 +150,8 @@ BEGIN
 END;
 GO
 
-DROP FUNCTION IF EXISTS booking_paid_amount; GO
+DROP FUNCTION IF EXISTS booking_paid_amount
+GO
 CREATE FUNCTION booking_paid_amount(
   @booking_id INT
 )
@@ -157,7 +166,8 @@ BEGIN
 END;
 GO
 
-DROP FUNCTION IF EXISTS booking_discount; GO
+DROP FUNCTION IF EXISTS booking_discount
+GO
 CREATE FUNCTION booking_discount(
   @booking_id INT
 )
@@ -175,7 +185,8 @@ BEGIN
 END;
 GO
 
-DROP FUNCTION IF EXISTS conference_start_date; GO
+DROP FUNCTION IF EXISTS conference_start_date
+GO
 CREATE FUNCTION conference_start_date(
   @conference_id INT
 )
@@ -190,7 +201,8 @@ BEGIN
 END;
 GO
 
-DROP FUNCTION IF EXISTS conference_end_date; GO
+DROP FUNCTION IF EXISTS conference_end_date
+GO
 CREATE FUNCTION conference_end_date(
   @conference_id INT
 )
@@ -205,7 +217,8 @@ BEGIN
 END;
 GO
 
-DROP FUNCTION IF EXISTS available_booked_day_spots; GO
+DROP FUNCTION IF EXISTS available_booked_day_spots
+GO
 CREATE FUNCTION available_booked_day_spots(
   @day_booking_id INT
 )
@@ -223,7 +236,8 @@ BEGIN
 END;
 GO
 
-DROP FUNCTION IF EXISTS available_booked_workshop_spots; GO
+DROP FUNCTION IF EXISTS available_booked_workshop_spots
+GO
 CREATE FUNCTION available_booked_workshop_spots(
   @workshop_booking_id INT
 )
@@ -241,7 +255,8 @@ BEGIN
 END;
 GO
 
-DROP FUNCTION IF EXISTS workshop_start_date; GO
+DROP FUNCTION IF EXISTS workshop_start_date
+GO
 CREATE FUNCTION workshop_start_date(
   @workshop_id INT
 )
@@ -257,7 +272,8 @@ BEGIN
 END;
 GO
 
-DROP FUNCTION IF EXISTS workshop_end_date; GO
+DROP FUNCTION IF EXISTS workshop_end_date
+GO
 CREATE FUNCTION workshop_end_date(
   @workshop_id INT
 )
@@ -273,7 +289,8 @@ BEGIN
 END;
 GO
 
-DROP FUNCTION IF EXISTS workshops_overlap; GO
+DROP FUNCTION IF EXISTS workshops_overlap
+GO
 CREATE FUNCTION workshops_overlap(
   @workshop1_id INT,
   @workshop2_id INT

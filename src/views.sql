@@ -1,4 +1,5 @@
-DROP VIEW IF EXISTS badges_view; GO
+DROP VIEW IF EXISTS badges_view
+GO
 CREATE VIEW badges_view
 AS
 SELECT DISTINCT
@@ -16,7 +17,8 @@ JOIN clients ON clients.id = bookings.client_id
 LEFT JOIN companies ON companies.client_id = clients.id;
 GO
 
-DROP VIEW IF EXISTS client_statistics_view; GO
+DROP VIEW IF EXISTS client_statistics_view
+GO
 CREATE VIEW client_statistics_view
 AS
 SELECT
@@ -29,7 +31,8 @@ LEFT JOIN booking_payments ON booking_payments.booking_id = bookings.id
 GROUP BY clients.id;
 GO
 
-DROP VIEW IF EXISTS upcoming_conferences_summary_view; GO
+DROP VIEW IF EXISTS upcoming_conferences_summary_view
+GO
 CREATE VIEW upcoming_conferences_summary_view
 AS
 SELECT
@@ -45,7 +48,8 @@ WHERE conference_days.date >= GETDATE()
 GROUP BY conferences.id, conferences.name;
 GO
 
-DROP VIEW IF EXISTS monthly_incomes_view; GO
+DROP VIEW IF EXISTS monthly_incomes_view
+GO
 CREATE VIEW monthly_incomes_view
 AS
 SELECT
@@ -56,7 +60,8 @@ FROM booking_payments
 GROUP BY YEAR(date), MONTH(date);
 GO
 
-DROP VIEW IF EXISTS booking_costs_view; GO
+DROP VIEW IF EXISTS booking_costs_view
+GO
 CREATE VIEW booking_costs_view
 AS
 WITH booking_costs AS (
@@ -79,6 +84,8 @@ SELECT
 FROM booking_costs;
 GO
 
+DROP VIEW IF EXISTS missing_attendees_view
+GO
 CREATE VIEW missing_attendees_view
 AS
 SELECT
