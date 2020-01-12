@@ -594,6 +594,7 @@ BEGIN
     FROM conference_days
     LEFT JOIN day_bookings ON day_bookings.conference_day_id = conference_days.id
     WHERE conference_days.id = @conference_day_id
+      AND day_bookings.cancelled_at IS NULL
     GROUP BY conference_days.id, conference_days.attendee_limit
   )
 END;
@@ -616,6 +617,7 @@ BEGIN
     FROM workshops
     LEFT JOIN workshop_bookings ON workshop_bookings.workshop_id = workshops.id
     WHERE workshops.id = @workshop_id
+       AND workshop_bookings.cancelled_at IS NULL
     GROUP BY workshops.id, workshops.attendee_limit
   )
 END;
