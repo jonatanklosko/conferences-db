@@ -1,4 +1,4 @@
-DROP PROCEDURE IF EXISTS add_conference
+DROP PROCEDURE IF EXISTS add_conference;
 GO
 CREATE PROCEDURE add_conference
   @name VARCHAR(50),
@@ -15,10 +15,10 @@ END TRY
 BEGIN CATCH
   DECLARE @error NVARCHAR(2048) = 'Failed to add the conference. Got an error: ' + ERROR_MESSAGE();
   THROW 51000, @error, 1;
-END CATCH;
+END CATCH
 GO
 
-DROP PROCEDURE IF EXISTS add_conference_day
+DROP PROCEDURE IF EXISTS add_conference_day;
 GO
 CREATE PROCEDURE add_conference_day
   @conference_id INT,
@@ -40,10 +40,10 @@ END TRY
 BEGIN CATCH
   DECLARE @error NVARCHAR(2048) = 'Failed to add the conference day. Got an error: ' + ERROR_MESSAGE();
   THROW 51000, @error, 1;
-END CATCH;
+END CATCH
 GO
 
-DROP PROCEDURE IF EXISTS add_workshop
+DROP PROCEDURE IF EXISTS add_workshop;
 GO
 CREATE PROCEDURE add_workshop
   @conference_day_id INT,
@@ -66,10 +66,10 @@ END TRY
 BEGIN CATCH
   DECLARE @error NVARCHAR(2048) = 'Failed to add the workshop. Got an error: ' + ERROR_MESSAGE();
   THROW 51000, @error, 1;
-END CATCH;
+END CATCH
 GO
 
-DROP PROCEDURE IF EXISTS add_conference_price
+DROP PROCEDURE IF EXISTS add_conference_price;
 GO
 CREATE PROCEDURE add_conference_price
   @conference_id INT,
@@ -91,10 +91,10 @@ END TRY
 BEGIN CATCH
   DECLARE @error NVARCHAR(2048) = 'Failed to add the conference price. Got an error: ' + ERROR_MESSAGE();
   THROW 51000, @error, 1;
-END CATCH;
+END CATCH
 GO
 
-DROP PROCEDURE IF EXISTS add_company_client
+DROP PROCEDURE IF EXISTS add_company_client;
 GO
 CREATE PROCEDURE add_company_client
   -- Client data
@@ -119,10 +119,10 @@ BEGIN CATCH
   ROLLBACK TRANSACTION;
   DECLARE @error NVARCHAR(2048) = 'Failed to add the client. Got an error: ' + ERROR_MESSAGE();
   THROW 51000, @error, 1;
-END CATCH;
+END CATCH
 GO
 
-DROP PROCEDURE IF EXISTS ensure_person
+DROP PROCEDURE IF EXISTS ensure_person;
 GO
 CREATE PROCEDURE ensure_person
   @first_name VARCHAR(50),
@@ -145,10 +145,10 @@ END TRY
 BEGIN CATCH
   DECLARE @error NVARCHAR(2048) = 'Failed to add the person. Got an error: ' + ERROR_MESSAGE();
   THROW 51000, @error, 1;
-END CATCH;
+END CATCH
 GO
 
-DROP PROCEDURE IF EXISTS add_individual_client
+DROP PROCEDURE IF EXISTS add_individual_client;
 GO
 CREATE PROCEDURE add_individual_client
   -- Client data
@@ -183,10 +183,10 @@ BEGIN CATCH
   ROLLBACK TRANSACTION;
   DECLARE @error NVARCHAR(2048) = 'Failed to add the client. Got an error: ' + ERROR_MESSAGE();
   THROW 51000, @error, 1;
-END CATCH;
+END CATCH
 GO
 
-DROP PROCEDURE IF EXISTS add_booking
+DROP PROCEDURE IF EXISTS add_booking;
 GO
 CREATE PROCEDURE add_booking
   @client_id INT,
@@ -207,10 +207,10 @@ END TRY
 BEGIN CATCH
   DECLARE @error NVARCHAR(2048) = 'Failed to add the booking. Got an error: ' + ERROR_MESSAGE();
   THROW 51000, @error, 1;
-END CATCH;
+END CATCH
 GO
 
-DROP PROCEDURE IF EXISTS add_day_booking
+DROP PROCEDURE IF EXISTS add_day_booking;
 GO
 CREATE PROCEDURE add_day_booking
   @booking_id INT,
@@ -240,10 +240,10 @@ END TRY
 BEGIN CATCH
   DECLARE @error NVARCHAR(2048) = 'Failed to add booking for the conference day. Got an error: ' + ERROR_MESSAGE();
   THROW 51000, @error, 1;
-END CATCH;
+END CATCH
 GO
 
-DROP PROCEDURE IF EXISTS add_workshop_booking
+DROP PROCEDURE IF EXISTS add_workshop_booking;
 GO
 CREATE PROCEDURE add_workshop_booking
   @day_booking_id INT,
@@ -273,10 +273,10 @@ END TRY
 BEGIN CATCH
   DECLARE @error NVARCHAR(2048) = 'Failed to add booking for the workshop. Got an error: ' + ERROR_MESSAGE();
   THROW 51000, @error, 1;
-END CATCH;
+END CATCH
 GO
 
-DROP PROCEDURE IF EXISTS add_attendee
+DROP PROCEDURE IF EXISTS add_attendee;
 GO
 CREATE PROCEDURE add_attendee
   -- Person data
@@ -300,10 +300,10 @@ BEGIN CATCH
   ROLLBACK TRANSACTION;
   DECLARE @error NVARCHAR(2048) = 'Failed to add attendee. Got an error: ' + ERROR_MESSAGE();
   THROW 51000, @error, 1;
-END CATCH;
+END CATCH
 GO
 
-DROP PROCEDURE IF EXISTS add_day_enrollment
+DROP PROCEDURE IF EXISTS add_day_enrollment;
 GO
 CREATE PROCEDURE add_day_enrollment
   @day_booking_id INT,
@@ -328,10 +328,10 @@ END TRY
 BEGIN CATCH
   DECLARE @error NVARCHAR(2048) = 'Failed to add enrollment for the conference day. Got an error: ' + ERROR_MESSAGE();
   THROW 51000, @error, 1;
-END CATCH;
+END CATCH
 GO
 
-DROP PROCEDURE IF EXISTS add_workshop_enrollment
+DROP PROCEDURE IF EXISTS add_workshop_enrollment;
 GO
 CREATE PROCEDURE add_workshop_enrollment
   @workshop_booking_id INT,
@@ -368,10 +368,10 @@ END TRY
 BEGIN CATCH
   DECLARE @error NVARCHAR(2048) = 'Failed to add enrollment for the workshop. Got an error: ' + ERROR_MESSAGE();
   THROW 51000, @error, 1;
-END CATCH;
+END CATCH
 GO
 
-DROP PROCEDURE IF EXISTS add_booking_payment
+DROP PROCEDURE IF EXISTS add_booking_payment;
 GO
 CREATE PROCEDURE add_booking_payment
   @booking_id INT,
@@ -388,10 +388,10 @@ END TRY
 BEGIN CATCH
   DECLARE @error NVARCHAR(2048) = 'Failed to add payment for the given booking. Got an error: ' + ERROR_MESSAGE();
   THROW 51000, @error, 1;
-END CATCH;
+END CATCH
 GO
 
-DROP PROCEDURE IF EXISTS add_workshop_interest
+DROP PROCEDURE IF EXISTS add_workshop_interest;
 GO
 CREATE PROCEDURE add_workshop_interest
   @workshop_id INT,
@@ -412,5 +412,5 @@ END TRY
 BEGIN CATCH
   DECLARE @error NVARCHAR(2048) = 'Failed to workshop interest. Got an error: ' + ERROR_MESSAGE();
   THROW 51000, @error, 1;
-END CATCH;
+END CATCH
 GO

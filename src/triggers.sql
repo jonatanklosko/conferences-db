@@ -1,4 +1,4 @@
-DROP TRIGGER IF EXISTS validate_workshop_attendee_limit_not_over_day_limit
+DROP TRIGGER IF EXISTS validate_workshop_attendee_limit_not_over_day_limit;
 GO
 CREATE TRIGGER validate_workshop_attendee_limit_not_over_day_limit
 ON workshops
@@ -14,10 +14,10 @@ BEGIN
   BEGIN
     THROW 51000, 'Workshop cannot have greater attendee limit than its conference day.', 1;
   END
-END;
+END
 GO
 
-DROP TRIGGER IF EXISTS validate_conference_day_attendee_limit_not_under_workshop_limit
+DROP TRIGGER IF EXISTS validate_conference_day_attendee_limit_not_under_workshop_limit;
 GO
 CREATE TRIGGER validate_conference_day_attendee_limit_not_under_workshop_limit
 ON conference_days
@@ -33,10 +33,10 @@ BEGIN
   BEGIN
     THROW 51000, 'Conference day cannot have lower attendee limit than its workshops.', 1;
   END
-END;
+END
 GO
 
-DROP TRIGGER IF EXISTS propagate_booking_cancellation
+DROP TRIGGER IF EXISTS propagate_booking_cancellation;
 GO
 CREATE TRIGGER propagate_booking_cancellation
 ON bookings
@@ -50,10 +50,10 @@ BEGIN
     FROM inserted updated_bookings
     JOIN day_bookings ON day_bookings.booking_id = updated_bookings.id;
   END
-END;
+END
 GO
 
-DROP TRIGGER IF EXISTS propagate_day_booking_cancellation
+DROP TRIGGER IF EXISTS propagate_day_booking_cancellation;
 GO
 CREATE TRIGGER propagate_day_booking_cancellation
 ON day_bookings
@@ -67,10 +67,10 @@ BEGIN
     FROM inserted updated_day_bookings
     JOIN workshop_bookings ON workshop_bookings.day_booking_id = updated_day_bookings.id;
   END
-END;
+END
 GO
 
-DROP TRIGGER IF EXISTS validate_new_day_booking_has_noncancelled_booking
+DROP TRIGGER IF EXISTS validate_new_day_booking_has_noncancelled_booking;
 GO
 CREATE TRIGGER validate_new_day_booking_has_noncancelled_booking
 ON day_bookings
@@ -86,10 +86,10 @@ BEGIN
   BEGIN
     THROW 51000, 'Cannot add day booking to a cancelled booking.', 1;
   END
-END;
+END
 GO
 
-DROP TRIGGER IF EXISTS validate_new_workshop_booking_has_noncancelled_day_booking
+DROP TRIGGER IF EXISTS validate_new_workshop_booking_has_noncancelled_day_booking;
 GO
 CREATE TRIGGER validate_new_workshop_booking_has_noncancelled_day_booking
 ON workshop_bookings
@@ -105,10 +105,10 @@ BEGIN
   BEGIN
     THROW 51000, 'Cannot add workshop booking to a cancelled day booking.', 1;
   END
-END;
+END
 GO
 
-DROP TRIGGER IF EXISTS validate_new_booking_payment_has_noncancelled_booking
+DROP TRIGGER IF EXISTS validate_new_booking_payment_has_noncancelled_booking;
 GO
 CREATE TRIGGER validate_new_booking_payment_has_noncancelled_booking
 ON booking_payments
@@ -124,10 +124,10 @@ BEGIN
   BEGIN
     THROW 51000, 'Cannot add booking payment to a cancelled booking.', 1;
   END
-END;
+END
 GO
 
-DROP TRIGGER IF EXISTS validate_new_day_booking_attendee_count_not_over_limit
+DROP TRIGGER IF EXISTS validate_new_day_booking_attendee_count_not_over_limit;
 GO
 CREATE TRIGGER validate_new_day_booking_attendee_count_not_over_limit
 ON day_bookings
@@ -142,10 +142,10 @@ BEGIN
   BEGIN
     THROW 51000, 'Not enough spots available for the conference day.', 1;
   END
-END;
+END
 GO
 
-DROP TRIGGER IF EXISTS validate_new_workshop_booking_attendee_count_not_over_limit
+DROP TRIGGER IF EXISTS validate_new_workshop_booking_attendee_count_not_over_limit;
 GO
 CREATE TRIGGER validate_new_workshop_booking_attendee_count_not_over_limit
 ON workshop_bookings
@@ -160,10 +160,10 @@ BEGIN
   BEGIN
     THROW 51000, 'Not enough spots available for the workshop.', 1;
   END
-END;
+END
 GO
 
-DROP TRIGGER IF EXISTS validate_new_day_enrollment_within_booked_limit
+DROP TRIGGER IF EXISTS validate_new_day_enrollment_within_booked_limit;
 GO
 CREATE TRIGGER validate_new_day_enrollment_within_booked_limit
 ON day_enrollments
@@ -178,10 +178,10 @@ BEGIN
   BEGIN
     THROW 51000, 'Not enough spots booked for the conference day to enroll in it.', 1;
   END
-END;
+END
 GO
 
-DROP TRIGGER IF EXISTS validate_new_workshop_enrollment_within_booked_limit
+DROP TRIGGER IF EXISTS validate_new_workshop_enrollment_within_booked_limit;
 GO
 CREATE TRIGGER validate_new_workshop_enrollment_within_booked_limit
 ON workshop_enrollments
@@ -196,10 +196,10 @@ BEGIN
   BEGIN
     THROW 51000, 'Not enough spots booked for the workshop to enroll in it.', 1;
   END
-END;
+END
 GO
 
-DROP TRIGGER IF EXISTS validate_day_booking_within_proper_conference
+DROP TRIGGER IF EXISTS validate_day_booking_within_proper_conference;
 GO
 CREATE TRIGGER validate_day_booking_within_proper_conference
 ON day_bookings
@@ -216,10 +216,10 @@ BEGIN
   BEGIN
     THROW 51000, 'Cannot book a day in a different conference than the booking one.', 1;
   END
-END;
+END
 GO
 
-DROP TRIGGER IF EXISTS validate_workshop_booking_within_proper_day_booking
+DROP TRIGGER IF EXISTS validate_workshop_booking_within_proper_day_booking;
 GO
 CREATE TRIGGER validate_workshop_booking_within_proper_day_booking
 ON workshop_bookings
@@ -236,10 +236,10 @@ BEGIN
   BEGIN
     THROW 51000, 'Cannot book a workshop on a different day than the day booking.', 1;
   END
-END;
+END
 GO
 
-DROP TRIGGER IF EXISTS validate_booking_date_before_conference_start
+DROP TRIGGER IF EXISTS validate_booking_date_before_conference_start;
 GO
 CREATE TRIGGER validate_booking_date_before_conference_start
 ON bookings
@@ -254,10 +254,10 @@ BEGIN
   BEGIN
     THROW 51000, 'Cannot add booking after conference start.', 1;
   END
-END;
+END
 GO
 
-DROP TRIGGER IF EXISTS validate_attendee_workshops_do_not_overlap
+DROP TRIGGER IF EXISTS validate_attendee_workshops_do_not_overlap;
 GO
 CREATE TRIGGER validate_attendee_workshops_do_not_overlap
 ON workshop_enrollments
@@ -282,5 +282,5 @@ BEGIN
   BEGIN
     THROW 51000, 'Attendee cannot enroll in two overlapping workshops.', 1;
   END
-END;
+END
 GO

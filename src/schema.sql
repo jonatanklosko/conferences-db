@@ -1,4 +1,4 @@
--- Drop the tables to recreate the database.
+-- Drop the tables to recreate the database.;
 DROP TABLE IF EXISTS booking_payments;
 DROP TABLE IF EXISTS companies;
 DROP TABLE IF EXISTS conference_prices;

@@ -1,4 +1,4 @@
-DROP FUNCTION IF EXISTS day_price_on
+DROP FUNCTION IF EXISTS day_price_on;
 GO
 CREATE FUNCTION day_price_on(
   @conference_id INT,
@@ -13,10 +13,10 @@ BEGIN
     WHERE conference_id = @conference_id AND final_date >= @date
     ORDER BY final_date
   )
-END;
+END
 GO
 
-DROP FUNCTION IF EXISTS available_conference_day_spots
+DROP FUNCTION IF EXISTS available_conference_day_spots;
 GO
 CREATE FUNCTION available_conference_day_spots(
   @conference_day_id INT
@@ -33,10 +33,10 @@ BEGIN
       AND day_bookings.cancelled_at IS NULL
     GROUP BY conference_days.id, conference_days.attendee_limit
   )
-END;
+END
 GO
 
-DROP FUNCTION IF EXISTS available_workshop_spots
+DROP FUNCTION IF EXISTS available_workshop_spots;
 GO
 CREATE FUNCTION available_workshop_spots(
   @workshop_id INT
@@ -53,10 +53,10 @@ BEGIN
        AND workshop_bookings.cancelled_at IS NULL
     GROUP BY workshops.id, workshops.attendee_limit
   )
-END;
+END
 GO
 
-DROP FUNCTION IF EXISTS conference_day_attendees
+DROP FUNCTION IF EXISTS conference_day_attendees;
 GO
 CREATE FUNCTION conference_day_attendees(
   @conference_day_id INT
@@ -76,7 +76,7 @@ RETURN (
 );
 GO
 
-DROP FUNCTION IF EXISTS workshop_attendees
+DROP FUNCTION IF EXISTS workshop_attendees;
 GO
 CREATE FUNCTION workshop_attendees(
   @workshop_id INT
@@ -96,7 +96,7 @@ RETURN (
 );
 GO
 
-DROP FUNCTION IF EXISTS attendee_workshops
+DROP FUNCTION IF EXISTS attendee_workshops;
 GO
 CREATE FUNCTION attendee_workshops(
   @attendee_id INT,
@@ -113,7 +113,7 @@ RETURN (
 );
 GO
 
-DROP FUNCTION IF EXISTS booking_full_days_cost
+DROP FUNCTION IF EXISTS booking_full_days_cost;
 GO
 CREATE FUNCTION booking_full_days_cost(
   @booking_id INT
@@ -128,10 +128,10 @@ BEGIN
     JOIN bookings ON bookings.id = day_bookings.booking_id
     WHERE booking_id = @booking_id
   )
-END;
+END
 GO
 
-DROP FUNCTION IF EXISTS booking_full_workshops_cost
+DROP FUNCTION IF EXISTS booking_full_workshops_cost;
 GO
 CREATE FUNCTION booking_full_workshops_cost(
   @booking_id INT
@@ -147,10 +147,10 @@ BEGIN
     JOIN workshops ON workshops.id = workshop_bookings.workshop_id
     WHERE day_bookings.booking_id = @booking_id
   )
-END;
+END
 GO
 
-DROP FUNCTION IF EXISTS booking_paid_amount
+DROP FUNCTION IF EXISTS booking_paid_amount;
 GO
 CREATE FUNCTION booking_paid_amount(
   @booking_id INT
@@ -163,10 +163,10 @@ BEGIN
     FROM booking_payments
     WHERE booking_id = @booking_id
   )
-END;
+END
 GO
 
-DROP FUNCTION IF EXISTS booking_discount
+DROP FUNCTION IF EXISTS booking_discount;
 GO
 CREATE FUNCTION booking_discount(
   @booking_id INT
@@ -182,10 +182,10 @@ BEGIN
     LEFT JOIN individual_clients ON clients.id = individual_clients.client_id
     WHERE bookings.id = @booking_id
   )
-END;
+END
 GO
 
-DROP FUNCTION IF EXISTS conference_start_date
+DROP FUNCTION IF EXISTS conference_start_date;
 GO
 CREATE FUNCTION conference_start_date(
   @conference_id INT
@@ -198,10 +198,10 @@ BEGIN
     FROM conference_days
     WHERE conference_id = @conference_id
   )
-END;
+END
 GO
 
-DROP FUNCTION IF EXISTS conference_end_date
+DROP FUNCTION IF EXISTS conference_end_date;
 GO
 CREATE FUNCTION conference_end_date(
   @conference_id INT
@@ -214,10 +214,10 @@ BEGIN
     FROM conference_days
     WHERE conference_id = @conference_id
   )
-END;
+END
 GO
 
-DROP FUNCTION IF EXISTS available_booked_day_spots
+DROP FUNCTION IF EXISTS available_booked_day_spots;
 GO
 CREATE FUNCTION available_booked_day_spots(
   @day_booking_id INT
@@ -233,10 +233,10 @@ BEGIN
     WHERE day_bookings.id = @day_booking_id
     GROUP BY day_bookings.id, day_bookings.attendee_count
   )
-END;
+END
 GO
 
-DROP FUNCTION IF EXISTS available_booked_workshop_spots
+DROP FUNCTION IF EXISTS available_booked_workshop_spots;
 GO
 CREATE FUNCTION available_booked_workshop_spots(
   @workshop_booking_id INT
@@ -252,10 +252,10 @@ BEGIN
     WHERE workshop_bookings.id = @workshop_booking_id
     GROUP BY workshop_bookings.id, workshop_bookings.attendee_count
   )
-END;
+END
 GO
 
-DROP FUNCTION IF EXISTS workshop_start_date
+DROP FUNCTION IF EXISTS workshop_start_date;
 GO
 CREATE FUNCTION workshop_start_date(
   @workshop_id INT
@@ -269,10 +269,10 @@ BEGIN
     JOIN conference_days ON conference_days.id = workshops.conference_day_id
     WHERE workshops.id = @workshop_id
   );
-END;
+END
 GO
 
-DROP FUNCTION IF EXISTS workshop_end_date
+DROP FUNCTION IF EXISTS workshop_end_date;
 GO
 CREATE FUNCTION workshop_end_date(
   @workshop_id INT
@@ -286,10 +286,10 @@ BEGIN
     JOIN conference_days ON conference_days.id = workshops.conference_day_id
     WHERE workshops.id = @workshop_id
   );
-END;
+END
 GO
 
-DROP FUNCTION IF EXISTS workshops_overlap
+DROP FUNCTION IF EXISTS workshops_overlap;
 GO
 CREATE FUNCTION workshops_overlap(
   @workshop1_id INT,
@@ -303,5 +303,5 @@ BEGIN
   DECLARE @workshop2_start DATETIME = dbo.workshop_start_date(@workshop2_id);
   DECLARE @workshop2_end DATETIME = dbo.workshop_end_date(@workshop2_id);
   RETURN IIF(@workshop1_start < @workshop2_end AND @workshop2_start < @workshop1_end, 1, 0);
-END;
+END
 GO
