@@ -2,8 +2,6 @@
 
 The generator is meant to be filling the database with random stuff to pretend that it has been in use for about 3 years.
 
-Work in progress. Not done yet.
-
 Components:
 
 - sqlrunner.py
