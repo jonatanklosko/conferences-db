@@ -653,6 +653,7 @@ class Generator:
                                     continue
                                 if daybooking[2] == 0:
                                     day_booking_idx += 1
+                                if people_this_workshop == 0:
                                     work_booking_idx += 1
                                 daybooking[2] += 1
                                 
@@ -687,6 +688,8 @@ class Generator:
                             
                             a = workshops[workshop_idx_t-1]
                             workshops[workshop_idx_t-1] = (a[0], a[1], a[2], a[3]-people_this_workshop)
+                    
+                    workshop_idx_s += workshopsnum
                     
                     if daybooking[2] > 0:
                         daybook_query = "INSERT INTO day_bookings VALUES({}, {}, {}, {})".format(
