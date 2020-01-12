@@ -574,7 +574,7 @@ BEGIN
     WHERE conference_id = @conference_id AND final_date >= @date
     ORDER BY final_date
   )
-END;
+END
 ```
 
 ### `available_conference_day_spots`
@@ -597,7 +597,7 @@ BEGIN
       AND day_bookings.cancelled_at IS NULL
     GROUP BY conference_days.id, conference_days.attendee_limit
   )
-END;
+END
 ```
 
 ### `available_workshop_spots`
@@ -620,7 +620,7 @@ BEGIN
        AND workshop_bookings.cancelled_at IS NULL
     GROUP BY workshops.id, workshops.attendee_limit
   )
-END;
+END
 ```
 
 ### `conference_day_attendees`
@@ -707,7 +707,7 @@ BEGIN
     JOIN bookings ON bookings.id = day_bookings.booking_id
     WHERE booking_id = @booking_id
   )
-END;
+END
 ```
 
 ### `booking_full_workshops_cost`
@@ -729,7 +729,7 @@ BEGIN
     JOIN workshops ON workshops.id = workshop_bookings.workshop_id
     WHERE day_bookings.booking_id = @booking_id
   )
-END;
+END
 ```
 
 ### `booking_paid_amount`
@@ -748,7 +748,7 @@ BEGIN
     FROM booking_payments
     WHERE booking_id = @booking_id
   )
-END;
+END
 ```
 
 ### `booking_discount`
@@ -771,7 +771,7 @@ BEGIN
     LEFT JOIN individual_clients ON clients.id = individual_clients.client_id
     WHERE bookings.id = @booking_id
   )
-END;
+END
 ```
 
 ### `conference_start_date`
@@ -790,7 +790,7 @@ BEGIN
     FROM conference_days
     WHERE conference_id = @conference_id
   )
-END;
+END
 ```
 
 ### `conference_end_date`
@@ -809,7 +809,7 @@ BEGIN
     FROM conference_days
     WHERE conference_id = @conference_id
   )
-END;
+END
 ```
 
 ### `available_booked_day_spots`
@@ -831,7 +831,7 @@ BEGIN
     WHERE day_bookings.id = @day_booking_id
     GROUP BY day_bookings.id, day_bookings.attendee_count
   )
-END;
+END
 ```
 
 ### `available_booked_workshop_spots`
@@ -853,7 +853,7 @@ BEGIN
     WHERE workshop_bookings.id = @workshop_booking_id
     GROUP BY workshop_bookings.id, workshop_bookings.attendee_count
   )
-END;
+END
 ```
 
 ### `workshop_start_date`
@@ -873,7 +873,7 @@ BEGIN
     JOIN conference_days ON conference_days.id = workshops.conference_day_id
     WHERE workshops.id = @workshop_id
   );
-END;
+END
 ```
 
 ### `workshop_end_date`
@@ -893,7 +893,7 @@ BEGIN
     JOIN conference_days ON conference_days.id = workshops.conference_day_id
     WHERE workshops.id = @workshop_id
   );
-END;
+END
 ```
 
 ### `workshops_overlap`
@@ -913,7 +913,7 @@ BEGIN
   DECLARE @workshop2_start DATETIME = dbo.workshop_start_date(@workshop2_id);
   DECLARE @workshop2_end DATETIME = dbo.workshop_end_date(@workshop2_id);
   RETURN IIF(@workshop1_start < @workshop2_end AND @workshop2_start < @workshop1_end, 1, 0);
-END;
+END
 ```
 
 ## Procedury
@@ -938,7 +938,7 @@ END TRY
 BEGIN CATCH
   DECLARE @error NVARCHAR(2048) = 'Failed to add the conference. Got an error: ' + ERROR_MESSAGE();
   THROW 51000, @error, 1;
-END CATCH;
+END CATCH
 ```
 
 ### `add_conference_day`
@@ -966,7 +966,7 @@ END TRY
 BEGIN CATCH
   DECLARE @error NVARCHAR(2048) = 'Failed to add the conference day. Got an error: ' + ERROR_MESSAGE();
   THROW 51000, @error, 1;
-END CATCH;
+END CATCH
 ```
 
 ### `add_workshop`
@@ -995,7 +995,7 @@ END TRY
 BEGIN CATCH
   DECLARE @error NVARCHAR(2048) = 'Failed to add the workshop. Got an error: ' + ERROR_MESSAGE();
   THROW 51000, @error, 1;
-END CATCH;
+END CATCH
 ```
 
 ### `add_conference_price`
@@ -1023,7 +1023,7 @@ END TRY
 BEGIN CATCH
   DECLARE @error NVARCHAR(2048) = 'Failed to add the conference price. Got an error: ' + ERROR_MESSAGE();
   THROW 51000, @error, 1;
-END CATCH;
+END CATCH
 ```
 
 ### `add_company_client`
@@ -1054,7 +1054,37 @@ BEGIN CATCH
   ROLLBACK TRANSACTION;
   DECLARE @error NVARCHAR(2048) = 'Failed to add the client. Got an error: ' + ERROR_MESSAGE();
   THROW 51000, @error, 1;
-END CATCH;
+END CATCH
+```
+
+### `ensure_person`
+
+Procedura pomocnicza, która zwraca identyfikator osoby o wskazanych danych.
+Tworzy nową osobę, jeżeli takowa nie istnieje.
+
+```sql
+CREATE PROCEDURE ensure_person
+  @first_name VARCHAR(50),
+  @last_name VARCHAR(50),
+  @email VARCHAR(50),
+  @person_id INT OUTPUT
+AS
+BEGIN TRY
+  SET @person_id = (
+    SELECT id FROM people
+    WHERE first_name = @first_name AND last_name = @last_name AND email = @email
+  );
+  IF @person_id IS NULL
+  BEGIN
+    INSERT INTO people (first_name, last_name, email)
+    VALUES (@first_name, @last_name, @email);
+    SET @person_id = SCOPE_IDENTITY();
+  END
+END TRY
+BEGIN CATCH
+  DECLARE @error NVARCHAR(2048) = 'Failed to add the person. Got an error: ' + ERROR_MESSAGE();
+  THROW 51000, @error, 1;
+END CATCH
 ```
 
 ### `add_individual_client`
@@ -1095,37 +1125,7 @@ BEGIN CATCH
   ROLLBACK TRANSACTION;
   DECLARE @error NVARCHAR(2048) = 'Failed to add the client. Got an error: ' + ERROR_MESSAGE();
   THROW 51000, @error, 1;
-END CATCH;
-```
-
-### `ensure_person`
-
-Procedura pomocnicza, która zwraca identyfikator osoby o wskazanych danych.
-Tworzy nową osobę, jeżeli takowa nie istnieje.
-
-```sql
-CREATE PROCEDURE ensure_person
-  @first_name VARCHAR(50),
-  @last_name VARCHAR(50),
-  @email VARCHAR(50),
-  @person_id INT OUTPUT
-AS
-BEGIN TRY
-  SET @person_id = (
-    SELECT id FROM people
-    WHERE first_name = @first_name AND last_name = @last_name AND email = @email
-  );
-  IF @person_id IS NULL
-  BEGIN
-    INSERT INTO people (first_name, last_name, email)
-    VALUES (@first_name, @last_name, @email);
-    SET @person_id = SCOPE_IDENTITY();
-  END
-END TRY
-BEGIN CATCH
-  DECLARE @error NVARCHAR(2048) = 'Failed to add the person. Got an error: ' + ERROR_MESSAGE();
-  THROW 51000, @error, 1;
-END CATCH;
+END CATCH
 ```
 
 ### `add_booking`
@@ -1152,7 +1152,7 @@ END TRY
 BEGIN CATCH
   DECLARE @error NVARCHAR(2048) = 'Failed to add the booking. Got an error: ' + ERROR_MESSAGE();
   THROW 51000, @error, 1;
-END CATCH;
+END CATCH
 ```
 
 ### `add_day_booking`
@@ -1188,7 +1188,7 @@ END TRY
 BEGIN CATCH
   DECLARE @error NVARCHAR(2048) = 'Failed to add booking for the conference day. Got an error: ' + ERROR_MESSAGE();
   THROW 51000, @error, 1;
-END CATCH;
+END CATCH
 ```
 
 ### `add_workshop_booking`
@@ -1224,7 +1224,7 @@ END TRY
 BEGIN CATCH
   DECLARE @error NVARCHAR(2048) = 'Failed to add booking for the workshop. Got an error: ' + ERROR_MESSAGE();
   THROW 51000, @error, 1;
-END CATCH;
+END CATCH
 ```
 
 ### `add_attendee`
@@ -1254,7 +1254,7 @@ BEGIN CATCH
   ROLLBACK TRANSACTION;
   DECLARE @error NVARCHAR(2048) = 'Failed to add attendee. Got an error: ' + ERROR_MESSAGE();
   THROW 51000, @error, 1;
-END CATCH;
+END CATCH
 ```
 
 ### `add_day_enrollment`
@@ -1285,7 +1285,7 @@ END TRY
 BEGIN CATCH
   DECLARE @error NVARCHAR(2048) = 'Failed to add enrollment for the conference day. Got an error: ' + ERROR_MESSAGE();
   THROW 51000, @error, 1;
-END CATCH;
+END CATCH
 ```
 
 ### `add_workshop_enrollment`
@@ -1328,7 +1328,7 @@ END TRY
 BEGIN CATCH
   DECLARE @error NVARCHAR(2048) = 'Failed to add enrollment for the workshop. Got an error: ' + ERROR_MESSAGE();
   THROW 51000, @error, 1;
-END CATCH;
+END CATCH
 ```
 
 ### `add_booking_payment`
@@ -1351,7 +1351,7 @@ END TRY
 BEGIN CATCH
   DECLARE @error NVARCHAR(2048) = 'Failed to add payment for the given booking. Got an error: ' + ERROR_MESSAGE();
   THROW 51000, @error, 1;
-END CATCH;
+END CATCH
 ```
 
 ### `add_workshop_interest`
@@ -1378,7 +1378,7 @@ END TRY
 BEGIN CATCH
   DECLARE @error NVARCHAR(2048) = 'Failed to workshop interest. Got an error: ' + ERROR_MESSAGE();
   THROW 51000, @error, 1;
-END CATCH;
+END CATCH
 ```
 
 ## Triggery
@@ -1402,7 +1402,7 @@ BEGIN
   BEGIN
     THROW 51000, 'Workshop cannot have greater attendee limit than its conference day.', 1;
   END
-END;
+END
 ```
 
 ### `validate_conference_day_attendee_limit_not_under_workshop_limit`
@@ -1424,7 +1424,7 @@ BEGIN
   BEGIN
     THROW 51000, 'Conference day cannot have lower attendee limit than its workshops.', 1;
   END
-END;
+END
 ```
 
 ### `propagate_booking_cancellation`
@@ -1444,7 +1444,7 @@ BEGIN
     FROM inserted updated_bookings
     JOIN day_bookings ON day_bookings.booking_id = updated_bookings.id;
   END
-END;
+END
 ```
 
 ### `propagate_day_booking_cancellation`
@@ -1464,7 +1464,7 @@ BEGIN
     FROM inserted updated_day_bookings
     JOIN workshop_bookings ON workshop_bookings.day_booking_id = updated_day_bookings.id;
   END
-END;
+END
 ```
 
 ### `validate_new_day_booking_has_noncancelled_booking`
@@ -1486,7 +1486,7 @@ BEGIN
   BEGIN
     THROW 51000, 'Cannot add day booking to a cancelled booking.', 1;
   END
-END;
+END
 ```
 
 ### `validate_new_workshop_booking_has_noncancelled_day_booking`
@@ -1508,7 +1508,7 @@ BEGIN
   BEGIN
     THROW 51000, 'Cannot add workshop booking to a cancelled day booking.', 1;
   END
-END;
+END
 ```
 
 ### `validate_new_booking_payment_has_noncancelled_booking`
@@ -1530,7 +1530,7 @@ BEGIN
   BEGIN
     THROW 51000, 'Cannot add booking payment to a cancelled booking.', 1;
   END
-END;
+END
 ```
 
 ### `validate_new_day_booking_attendee_count_not_over_limit`
@@ -1551,7 +1551,7 @@ BEGIN
   BEGIN
     THROW 51000, 'Not enough spots available for the conference day.', 1;
   END
-END;
+END
 ```
 
 ### `validate_new_workshop_booking_attendee_count_not_over_limit`
@@ -1572,7 +1572,7 @@ BEGIN
   BEGIN
     THROW 51000, 'Not enough spots available for the workshop.', 1;
   END
-END;
+END
 ```
 
 ### `validate_new_day_enrollment_within_booked_limit`
@@ -1593,7 +1593,7 @@ BEGIN
   BEGIN
     THROW 51000, 'Not enough spots booked for the conference day to enroll in it.', 1;
   END
-END;
+END
 ```
 
 ### `validate_new_workshop_enrollment_within_booked_limit`
@@ -1614,7 +1614,7 @@ BEGIN
   BEGIN
     THROW 51000, 'Not enough spots booked for the workshop to enroll in it.', 1;
   END
-END;
+END
 ```
 
 ### `validate_day_booking_within_proper_conference`
@@ -1637,7 +1637,7 @@ BEGIN
   BEGIN
     THROW 51000, 'Cannot book a day in a different conference than the booking one.', 1;
   END
-END;
+END
 ```
 
 ### `validate_workshop_booking_within_proper_day_booking`
@@ -1660,7 +1660,7 @@ BEGIN
   BEGIN
     THROW 51000, 'Cannot book a workshop on a different day than the day booking.', 1;
   END
-END;
+END
 ```
 
 ### `validate_booking_date_before_conference_start`
@@ -1681,7 +1681,7 @@ BEGIN
   BEGIN
     THROW 51000, 'Cannot add booking after conference start.', 1;
   END
-END;
+END
 ```
 
 ### `validate_attendee_workshops_do_not_overlap`
@@ -1712,5 +1712,5 @@ BEGIN
   BEGIN
     THROW 51000, 'Attendee cannot enroll in two overlapping workshops.', 1;
   END
-END;
+END
 ```
