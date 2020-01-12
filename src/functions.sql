@@ -155,7 +155,7 @@ GO
 CREATE FUNCTION booking_paid_amount(
   @booking_id INT
 )
-RETURNS INT
+RETURNS MONEY
 AS
 BEGIN
   RETURN (

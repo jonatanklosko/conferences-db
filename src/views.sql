@@ -24,10 +24,9 @@ AS
 SELECT
   clients.id client_id,
   COUNT(DISTINCT bookings.id) number_of_bookings,
-  SUM(booking_payments.value) total_payments
+  SUM(dbo.booking_paid_amount(bookings.id)) total_payments
 FROM clients
 JOIN bookings ON bookings.client_id = clients.id
-LEFT JOIN booking_payments ON booking_payments.booking_id = bookings.id
 GROUP BY clients.id;
 GO
 
