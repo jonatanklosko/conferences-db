@@ -118,7 +118,7 @@ GO
 CREATE FUNCTION booking_full_days_cost(
   @booking_id INT
 )
-RETURNS INT
+RETURNS MONEY
 AS
 BEGIN
   RETURN (
@@ -136,7 +136,7 @@ GO
 CREATE FUNCTION booking_full_workshops_cost(
   @booking_id INT
 )
-RETURNS INT
+RETURNS MONEY
 AS
 BEGIN
   RETURN (

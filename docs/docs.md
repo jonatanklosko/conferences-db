@@ -696,7 +696,7 @@ Funkcja zwracająca całkowitą kwotę za same dni konferencji dla wskazanego za
 CREATE FUNCTION booking_full_days_cost(
   @booking_id INT
 )
-RETURNS INT
+RETURNS MONEY
 AS
 BEGIN
   RETURN (
@@ -717,7 +717,7 @@ Funkcja zwracająca całkowitą kwotę za warsztaty dla wskazanego zamówienia.
 CREATE FUNCTION booking_full_workshops_cost(
   @booking_id INT
 )
-RETURNS INT
+RETURNS MONEY
 AS
 BEGIN
   RETURN (
