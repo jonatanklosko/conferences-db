@@ -790,6 +790,50 @@ BEGIN
 END;
 ```
 
+### `available_booked_day_spots`
+
+Funkcja wyznaczająca liczbę wolnych zarezerwowanych miejsc dla wskazanej rezerwacji na dzień konferencji.
+
+```sql
+CREATE FUNCTION available_booked_day_spots(
+  @day_booking_id INT
+)
+RETURNS INT
+AS
+BEGIN
+  RETURN (
+    SELECT
+      attendee_count - ISNULL(COUNT(day_enrollments.id), 0)
+    FROM day_bookings
+    LEFT JOIN day_enrollments ON day_enrollments.day_booking_id = day_bookings.id
+    WHERE day_bookings.id = @day_booking_id
+    GROUP BY day_bookings.id, day_bookings.attendee_count
+  )
+END;
+```
+
+### `available_booked_workshop_spots`
+
+Funkcja wyznaczająca liczbę wolnych zarezerwowanych miejsc dla wskazanej rezerwacji na warsztat.
+
+```sql
+CREATE FUNCTION available_booked_workshop_spots(
+  @workshop_booking_id INT
+)
+RETURNS INT
+AS
+BEGIN
+  RETURN (
+    SELECT
+      attendee_count - ISNULL(COUNT(workshop_enrollments.id), 0)
+    FROM workshop_bookings
+    LEFT JOIN workshop_enrollments ON workshop_enrollments.workshop_booking_id = workshop_bookings.id
+    WHERE workshop_bookings.id = @workshop_booking_id
+    GROUP BY workshop_bookings.id, workshop_bookings.attendee_count
+  )
+END;
+```
+
 ## Procedury
 
 ### `add_conference`

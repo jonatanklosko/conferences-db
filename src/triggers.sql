@@ -110,10 +110,44 @@ BEGIN
   IF EXISTS (
     SELECT 1
     FROM inserted inserted_workshop_bookings
-    WHERE dbo.available_workshop_spots (inserted_workshop_bookings.workshop_id) < 0
+    WHERE dbo.available_workshop_spots(inserted_workshop_bookings.workshop_id) < 0
   )
   BEGIN
     THROW 51000, 'Not enough spots available for the workshop.', 1;
+  END
+END;
+GO
+
+DROP TRIGGER IF EXISTS validate_new_day_enrollment_enough_spots_trigger; GO
+CREATE TRIGGER validate_new_day_enrollment_enough_spots_trigger
+ON day_enrollments
+AFTER INSERT
+AS
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM inserted inserted_day_enrollments
+    WHERE dbo.available_booked_day_spots(inserted_day_enrollments.day_booking_id) < 0
+  )
+  BEGIN
+    THROW 51000, 'Not enough spots booked for the conference day to enroll in it.', 1;
+  END
+END;
+GO
+
+DROP TRIGGER IF EXISTS validate_new_workshop_enrollment_enough_booked_spots_trigger; GO
+CREATE TRIGGER validate_new_workshop_enrollment_enough_booked_spots_trigger
+ON workshop_enrollments
+AFTER INSERT
+AS
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM inserted inserted_workshop_enrollments
+    WHERE dbo.available_booked_workshop_spots(inserted_workshop_enrollments.workshop_booking_id) < 0
+  )
+  BEGIN
+    THROW 51000, 'Not enough spots booked for the workshop to enroll in it.', 1;
   END
 END;
 GO
