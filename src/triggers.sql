@@ -123,7 +123,7 @@ GO
 DROP TRIGGER IF EXISTS validate_new_day_booking_attendee_count_not_over_limit; GO
 CREATE TRIGGER validate_new_day_booking_attendee_count_not_over_limit
 ON day_bookings
-AFTER INSERT
+AFTER INSERT, UPDATE
 AS
 BEGIN
   IF EXISTS (
@@ -140,7 +140,7 @@ GO
 DROP TRIGGER IF EXISTS validate_new_workshop_booking_attendee_count_not_over_limit; GO
 CREATE TRIGGER validate_new_workshop_booking_attendee_count_not_over_limit
 ON workshop_bookings
-AFTER INSERT
+AFTER INSERT, UPDATE
 AS
 BEGIN
   IF EXISTS (
@@ -222,6 +222,23 @@ BEGIN
   )
   BEGIN
     THROW 51000, 'Cannot book a workshop on a different day than the day booking.', 1;
+  END
+END;
+GO
+
+DROP TRIGGER IF EXISTS validate_booking_date_before_conference_start; GO
+CREATE TRIGGER validate_booking_date_before_conference_start
+ON bookings
+AFTER INSERT
+AS
+BEGIN
+  IF EXISTS (
+    SELECT 1
+    FROM inserted inserted_bookings
+    WHERE inserted_bookings.created_at > dbo.conference_start_date(inserted_bookings.conference_id)
+  )
+  BEGIN
+    THROW 51000, 'Cannot add booking after the conference start.', 1;
   END
 END;
 GO
