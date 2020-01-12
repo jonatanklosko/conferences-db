@@ -17,4 +17,4 @@ Files ordered in the way they should be executed:
 
 The project includes sample data generator (under `src/generator`).
 To make things simple the repository includes an SQL file created by the generator,
-so you can just execute `src/generator/baza.sql` to fill the database.
+so you can just execute `src/generator/sample_data.sql` to fill the database.

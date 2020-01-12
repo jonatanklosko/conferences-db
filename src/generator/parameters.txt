@@ -1,4 +1,0 @@
-{
-  "server":   "DESKTOP-M7RT9M0",
-  "database": "Projekt"
-}

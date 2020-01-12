@@ -865,7 +865,7 @@ class Generator:
                         
     
     def CREATE(dataBase):
-        file = ExportTools.openFile("baza", "sql", withClear=True)
+        file = ExportTools.openFile("sample_data", "sql", withClear=True)
         
         #Generator.__useStatement(file, dataBase) # uncomment if needed
         Generator.__emptyDataBase(file)
