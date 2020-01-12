@@ -16,8 +16,8 @@ BEGIN
 END;
 GO
 
-DROP TRIGGER IF EXISTS propagate_booking_cancellation_trigger; GO
-CREATE TRIGGER propagate_booking_cancellation_trigger
+DROP TRIGGER IF EXISTS propagate_booking_cancellation; GO
+CREATE TRIGGER propagate_booking_cancellation
 ON bookings
 AFTER UPDATE
 AS
@@ -32,8 +32,8 @@ BEGIN
 END;
 GO
 
-DROP TRIGGER IF EXISTS propagate_day_booking_cancellation_trigger; GO
-CREATE TRIGGER propagate_day_booking_cancellation_trigger
+DROP TRIGGER IF EXISTS propagate_day_booking_cancellation; GO
+CREATE TRIGGER propagate_day_booking_cancellation
 ON day_bookings
 AFTER UPDATE
 AS
@@ -48,8 +48,8 @@ BEGIN
 END;
 GO
 
-DROP TRIGGER IF EXISTS validate_new_day_booking_not_cancelled_trigger; GO
-CREATE TRIGGER validate_new_day_booking_not_cancelled_trigger
+DROP TRIGGER IF EXISTS validate_new_day_booking_has_noncancelled_booking; GO
+CREATE TRIGGER validate_new_day_booking_has_noncancelled_booking
 ON day_bookings
 AFTER INSERT
 AS
@@ -66,8 +66,8 @@ BEGIN
 END;
 GO
 
-DROP TRIGGER IF EXISTS validate_new_workshop_booking_not_cancelled_trigger; GO
-CREATE TRIGGER validate_new_workshop_booking_not_cancelled_trigger
+DROP TRIGGER IF EXISTS validate_new_workshop_booking_has_noncancelled_day_booking; GO
+CREATE TRIGGER validate_new_workshop_booking_has_noncancelled_day_booking
 ON workshop_bookings
 AFTER INSERT
 AS
@@ -84,8 +84,8 @@ BEGIN
 END;
 GO
 
-DROP TRIGGER IF EXISTS validate_new_booking_payment_not_cancelled_trigger; GO
-CREATE TRIGGER validate_new_booking_payment_not_cancelled_trigger
+DROP TRIGGER IF EXISTS validate_new_booking_payment_has_noncancelled_booking; GO
+CREATE TRIGGER validate_new_booking_payment_has_noncancelled_booking
 ON booking_payments
 AFTER INSERT
 AS
@@ -102,8 +102,8 @@ BEGIN
 END;
 GO
 
-DROP TRIGGER IF EXISTS validate_new_day_booking_enough_spots_trigger; GO
-CREATE TRIGGER validate_new_day_booking_enough_spots_trigger
+DROP TRIGGER IF EXISTS validate_new_day_booking_attendee_count_not_over_limit; GO
+CREATE TRIGGER validate_new_day_booking_attendee_count_not_over_limit
 ON day_bookings
 AFTER INSERT
 AS
@@ -119,8 +119,8 @@ BEGIN
 END;
 GO
 
-DROP TRIGGER IF EXISTS validate_new_workshop_booking_enough_spots_trigger; GO
-CREATE TRIGGER validate_new_workshop_booking_enough_spots_trigger
+DROP TRIGGER IF EXISTS validate_new_workshop_booking_attendee_count_not_over_limit; GO
+CREATE TRIGGER validate_new_workshop_booking_attendee_count_not_over_limit
 ON workshop_bookings
 AFTER INSERT
 AS
@@ -136,8 +136,8 @@ BEGIN
 END;
 GO
 
-DROP TRIGGER IF EXISTS validate_new_day_enrollment_enough_spots_trigger; GO
-CREATE TRIGGER validate_new_day_enrollment_enough_spots_trigger
+DROP TRIGGER IF EXISTS validate_new_day_enrollment_within_booked_limit; GO
+CREATE TRIGGER validate_new_day_enrollment_within_booked_limit
 ON day_enrollments
 AFTER INSERT
 AS
@@ -153,8 +153,8 @@ BEGIN
 END;
 GO
 
-DROP TRIGGER IF EXISTS validate_new_workshop_enrollment_enough_booked_spots_trigger; GO
-CREATE TRIGGER validate_new_workshop_enrollment_enough_booked_spots_trigger
+DROP TRIGGER IF EXISTS validate_new_workshop_enrollment_within_booked_limit; GO
+CREATE TRIGGER validate_new_workshop_enrollment_within_booked_limit
 ON workshop_enrollments
 AFTER INSERT
 AS
