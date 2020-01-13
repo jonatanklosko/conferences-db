@@ -86,6 +86,7 @@ Autorzy: Jonatan Kłosko, Marcin Zięba
     - [`validate_booking_date_before_conference_start`](#validate_booking_date_before_conference_start)
     - [`validate_attendee_workshops_do_not_overlap`](#validate_attendee_workshops_do_not_overlap)
 8. [Indeksy](#indeksy)
+9. [Uprawnienia](#uprawnienia)
 
 ## Diagram ER
 
@@ -1854,3 +1855,35 @@ CREATE INDEX index_booking_payments_on_booking_id ON booking_payments (booking_i
 -- individual_clients
 CREATE INDEX index_individual_clients_on_client_id ON individual_clients (client_id);
 ```
+
+## Uprawnienia
+
+System zarządzania konferencjami składa się z kilku rodzajów użytkowników.
+Lista proponowanych ról jest następująca:
+
+- **Administrator systemu**
+
+  Osoba zarządzająca bazą danych. Posiada nieograniczony dostęp do bazy danych oraz pełną
+  kontrolę nad systemem celem obsługiwania sytuacji losowych oraz rozwiązywania
+  ewentualnych problemów.
+
+- **Pracownik firmy**
+
+  Osoba odpowiedzialna za kontakt z klientem i obsługę zamówień. Posiada szereg uprawnień
+  niezbędnych do efektywnego wykonywania powierzonego zadania (dostęp do procedur, funkcji i widoków).
+
+- **Organizator konferencji**
+
+  Przedstawiciel podmiotu organizującego konferencję. Posiada uprawnienia umożliwiające mu
+  na zarejestrowanie konferencji i ustalenia jej szczegółów.
+
+- **Klient**
+
+  Osoba rejestrująca siebie (wówczas klient jest również uczestnikiem) lub grupę ludzi
+  (w przypadku zamówień firmowych) na konferencję i poszczególne warsztaty. Ma dostęp do
+  funkcjonalności związanych z rezerwacjami oraz płatnościami.
+
+- **Uczestnik**
+
+  Osoba zarejestrowana na konferencję i/lub warsztaty. Ma możliwość sprawdzenia na co jest
+  zapisany oraz poglądu swoich danych.
