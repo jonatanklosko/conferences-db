@@ -91,10 +91,12 @@ Autorzy: Jonatan Kłosko, Marcin Zięba
 ## Diagram ER
 
 ![Diagram ER](./img/er_diagram.svg)
+\
 
 ## Schemat
 
 ![Schemat](./img/schema.svg)
+\
 
 ## Tabele
 
@@ -451,7 +453,8 @@ CREATE TABLE workshop_enrollments (
   day_enrollment_id INT NOT NULL FOREIGN KEY REFERENCES day_enrollments(id),
   workshop_booking_id INT NOT NULL FOREIGN KEY REFERENCES workshop_bookings(id),
 
-  CONSTRAINT workshop_enrollments__unique_workshop_within_day_enrollment UNIQUE (workshop_booking_id, day_enrollment_id)
+  CONSTRAINT workshop_enrollments__unique_workshop_within_day_enrollment
+    UNIQUE (workshop_booking_id, day_enrollment_id)
 );
 ```
 
@@ -1076,7 +1079,8 @@ BEGIN TRY
   BEGIN
     THROW 51000, 'Conference day with the given id does not exist.', 1;
   END
-  INSERT INTO workshops (conference_day_id, name, description, start_time, end_time, room, price, attendee_limit)
+  INSERT INTO workshops (conference_day_id, name, description,
+    start_time, end_time, room, price, attendee_limit)
   VALUES (@conference_day_id, @name, @description, @start_time, @end_time, @room, @price, @attendee_limit);
 END TRY
 BEGIN CATCH
@@ -1261,7 +1265,11 @@ BEGIN TRY
   BEGIN
     THROW 51000, 'Conference day with the given id does not exist.', 1;
   END
-  IF EXISTS (SELECT 1 FROM day_bookings WHERE booking_id = @booking_id AND conference_day_id = @conference_day_id)
+  IF EXISTS (
+    SELECT 1
+    FROM day_bookings
+    WHERE booking_id = @booking_id AND conference_day_id = @conference_day_id
+  )
   BEGIN
     THROW 51000, 'The given conference day is already booked.', 1;
   END
@@ -1273,7 +1281,8 @@ BEGIN TRY
   VALUES (@booking_id, @conference_day_id, @attendee_count);
 END TRY
 BEGIN CATCH
-  DECLARE @error NVARCHAR(2048) = 'Failed to add booking for the conference day. Got an error: ' + ERROR_MESSAGE();
+  DECLARE @error NVARCHAR(2048) = 'Failed to add booking for the conference day. Got an error: '
+    + ERROR_MESSAGE();
   THROW 51000, @error, 1;
 END CATCH
 ```
@@ -1297,7 +1306,11 @@ BEGIN TRY
   BEGIN
     THROW 51000, 'Workshop with the given id does not exist.', 1;
   END
-  IF EXISTS (SELECT 1 FROM workshop_bookings WHERE workshop_id = @workshop_id AND day_booking_id = @day_booking_id)
+  IF EXISTS (
+    SELECT 1
+    FROM workshop_bookings
+    WHERE workshop_id = @workshop_id AND day_booking_id = @day_booking_id
+  )
   BEGIN
     THROW 51000, 'The given workshop is already booked.', 1;
   END
@@ -1362,7 +1375,11 @@ BEGIN TRY
   BEGIN
     THROW 51000, 'Attendee with the given id does not exist.', 1;
   END
-  IF EXISTS (SELECT 1 FROM day_enrollments WHERE attendee_id = @attendee_id AND day_booking_id = @day_booking_id)
+  IF EXISTS (
+    SELECT 1
+    FROM day_enrollments
+    WHERE attendee_id = @attendee_id AND day_booking_id = @day_booking_id
+  )
   BEGIN
     THROW 51000, 'The given attendee is already enrolled in the given day.', 1;
   END
@@ -1370,7 +1387,8 @@ BEGIN TRY
   VALUES (@day_booking_id, @attendee_id);
 END TRY
 BEGIN CATCH
-  DECLARE @error NVARCHAR(2048) = 'Failed to add enrollment for the conference day. Got an error: ' + ERROR_MESSAGE();
+  DECLARE @error NVARCHAR(2048) = 'Failed to add enrollment for the conference day. Got an error: '
+    + ERROR_MESSAGE();
   THROW 51000, @error, 1;
 END CATCH
 ```
@@ -1405,7 +1423,11 @@ BEGIN TRY
   BEGIN
     THROW 51000, 'The given attendee is not enrolled in conference day on which the workshop takes place.', 1;
   END
-  IF EXISTS (SELECT 1 FROM workshop_enrollments WHERE day_enrollment_id = @day_enrollment_id AND workshop_booking_id = @workshop_booking_id)
+  IF EXISTS (
+    SELECT 1
+    FROM workshop_enrollments
+    WHERE day_enrollment_id = @day_enrollment_id AND workshop_booking_id = @workshop_booking_id
+  )
   BEGIN
     THROW 51000, 'The given attendee is already enrolled in the given workshop.', 1;
   END
@@ -1413,7 +1435,8 @@ BEGIN TRY
   VALUES (@day_enrollment_id, @workshop_booking_id);
 END TRY
 BEGIN CATCH
-  DECLARE @error NVARCHAR(2048) = 'Failed to add enrollment for the workshop. Got an error: ' + ERROR_MESSAGE();
+  DECLARE @error NVARCHAR(2048) = 'Failed to add enrollment for the workshop. Got an error: '
+    + ERROR_MESSAGE();
   THROW 51000, @error, 1;
 END CATCH
 ```
@@ -1436,7 +1459,8 @@ BEGIN TRY
   VALUES (@booking_id, @value, GETDATE());
 END TRY
 BEGIN CATCH
-  DECLARE @error NVARCHAR(2048) = 'Failed to add payment for the given booking. Got an error: ' + ERROR_MESSAGE();
+  DECLARE @error NVARCHAR(2048) = 'Failed to add payment for the given booking. Got an error: '
+    + ERROR_MESSAGE();
   THROW 51000, @error, 1;
 END CATCH
 ```
