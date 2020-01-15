@@ -111,3 +111,32 @@ WHERE cancelled_at IS NULL
     GROUP BY workshop_bookings.id, day_bookings.booking_id, workshop_bookings.attendee_count
     HAVING workshop_bookings.attendee_count > COUNT(workshop_enrollments.id)
   );
+GO
+
+DROP VIEW IF EXISTS workshop_interests_summary_view;
+GO
+CREATE VIEW workshop_interests_summary_view
+AS
+WITH interests_summary AS (
+  SELECT
+    bookings.conference_id,
+    workshop_interests.booking_id,
+    workshop_interests.workshop_id,
+    dbo.available_workshop_spots(workshops.id) available_spots,
+    workshops.attendee_limit total_spots,
+    DATEDIFF(DAY, GETDATE(), dbo.conference_start_date(bookings.conference_id)) days_until_conference
+  FROM workshop_interests
+  JOIN workshops ON workshops.id = workshop_interests.workshop_id
+  JOIN bookings on bookings.id = workshop_interests.booking_id
+)
+SELECT
+  conference_id,
+  booking_id,
+  workshop_id,
+  available_spots,
+  total_spots,
+  1 - ROUND(available_spots / CAST(total_spots AS FLOAT), 4) occupation_rate,
+  days_until_conference
+FROM interests_summary
+WHERE available_spots > 0 AND days_until_conference > 0;
+GO
